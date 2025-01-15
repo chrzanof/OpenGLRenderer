@@ -34,19 +34,34 @@ int main()
 	}
 
 	glViewport(0, 0, 800, 600);
+
+
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	float verticies[] = {
-		-0.5, -0.5,
-		 0.5, -0.5,
-		 0.0,  0.5
+	float vertices[] = {
+	 0.5f,  0.5f, 0.0f,  // top right
+	 0.5f, -0.5f, 0.0f,  // bottom right
+	-0.5f, -0.5f, 0.0f,  // bottom left
+	-0.5f,  0.5f, 0.0f   // top left 
+	};
+	unsigned int indices[] = {  
+		0, 1, 3,   // first triangle
+		1, 2, 3    // second triangle
 	};
 
-	unsigned int VertexBufferObject;
+	unsigned int vertexArrayObject, vertexBufferObject, elementBufferObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glGenBuffers(1, &vertexBufferObject);
+	glGenBuffers(1, &elementBufferObject);
 
-	glGenBuffers(1, &VertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+
+	glBindVertexArray(vertexArrayObject);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
 
 	const char* vertexShaderSource = "#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
@@ -78,13 +93,14 @@ int main()
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
 
+	glDeleteShader(fragmentShader);
+	glDeleteShader(vertexShader);
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glUseProgram(shaderProgram);
+	
 
-	glDeleteShader(fragmentShader);
-	glDeleteShader(vertexShader);
 
 
 	while (!glfwWindowShouldClose(window))
@@ -93,6 +109,11 @@ int main()
 
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shaderProgram);
+		glBindVertexArray(vertexArrayObject);
+		// glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
