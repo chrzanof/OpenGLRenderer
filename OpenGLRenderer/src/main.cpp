@@ -63,22 +63,18 @@ int main()
 	};
 
 	// generujemy obiekty
-	unsigned int vertexBufferObject;//, elementBufferObject;
+	
 	VAO vao{};
-	// VBO vbo{};
+	VBO vbo{};
 	EBO ebo{};
 	
-	glGenBuffers(1, &vertexBufferObject);
-
-	// podpinamy Vertex array
+	
 	vao.Bind();
-	// podpinamy vertex buffer
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices.front(), GL_STATIC_DRAW);
+	
+	vbo.Bind();
+	vbo.SetData(vertices);
 	ebo.Bind();
-	ebo.SetData(indices, 6);
-
-
+	ebo.SetData(indices);
 
 	vao.SetAttributePointer(0, 3, GL_FLOAT, 6, 0);
 	vao.SetAttributePointer(1, 3, GL_FLOAT, 6, 3);

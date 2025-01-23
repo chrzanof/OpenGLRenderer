@@ -17,7 +17,7 @@ public:
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
 	}
 
-	void SetData(const std::vector<unsigned int>& indices, unsigned int length)
+	void SetData(const std::vector<unsigned int>& indices)
 	{
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,  indices.size() * sizeof(unsigned int), &indices.front(), GL_STATIC_DRAW);
 	}
