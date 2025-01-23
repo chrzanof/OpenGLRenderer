@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="src\EBO.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\VAO.h" />
     <ClInclude Include="src\VBO.h" />
   </ItemGroup>
