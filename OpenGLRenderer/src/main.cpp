@@ -2,7 +2,11 @@
 #include <GLFW/glfw3.h>
 
 #include "Shader.h"
+#include "VAO.h"
+#include "VBO.h"
+#include "EBO.h"
 #include <iostream>
+#include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -45,39 +49,39 @@ int main()
 
 	Shader shader("src/shader.vs", "src/shader.fs");
 
-	float vertices[] = {
-		// positions         // colors
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
-
+	
+	std::vector<float> vertices = {
+		// positions          // colors           
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   
+		-0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   
 	};
-	unsigned int indices[] = {  
+	std::vector<unsigned int> indices = {
 		0, 1, 3,   // first triangle
-		// 1, 2, 3    // second triangle
+		1, 2, 3    // second triangle
 	};
 
 	// generujemy obiekty
-	unsigned int vertexArrayObject, vertexBufferObject, elementBufferObject;
-	glGenVertexArrays(1, &vertexArrayObject);
+	unsigned int vertexBufferObject;//, elementBufferObject;
+	VAO vao{};
+	// VBO vbo{};
+	EBO ebo{};
+	
 	glGenBuffers(1, &vertexBufferObject);
-	glGenBuffers(1, &elementBufferObject);
 
 	// podpinamy Vertex array
-	glBindVertexArray(vertexArrayObject);
+	vao.Bind();
 	// podpinamy vertex buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//podpinamy element buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices.front(), GL_STATIC_DRAW);
+	ebo.Bind();
+	ebo.SetData(indices, 6);
 
 
-	// wskazujemy na atrybuty position i color
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
-	glEnableVertexAttribArray(1);
+
+	vao.SetAttributePointer(0, 3, GL_FLOAT, 6, 0);
+	vao.SetAttributePointer(1, 3, GL_FLOAT, 6, 3);
 	
 	// pêtla renderingu
 	while (!glfwWindowShouldClose(window))
@@ -88,8 +92,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
-		glBindVertexArray(vertexArrayObject);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// glBindVertexArray(vertexArrayObject);
+		vao.Bind();
+		// glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
