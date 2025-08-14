@@ -23,18 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VAO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VBO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EBO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
