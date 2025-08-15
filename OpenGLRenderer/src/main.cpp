@@ -8,13 +8,17 @@
 #include <fstream>
 #include <sstream>
 
+#include "Vector3f.h"
+#include "Vector4f.h"
+#include "Vertex.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void processInput(GLFWwindow* window);
 
 std::string ReadFile(const std::string filePath);
 
-GLuint CreateVertexBufferObject(GLenum target, float* vertices, GLsizeiptr size, GLenum usage);
+GLuint CreateVertexBufferObject(GLenum target, Vertex* vertices, GLsizeiptr size, GLenum usage);
 
 GLuint CreateVertexArrayObject();
 
@@ -59,22 +63,27 @@ int main()
 	// ustawiamy callback zmiany rozmiaru okna
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	float positions[] = {
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f,
+	Vertex vertices[] = {
+		Vertex(-1.0f, -1.0f, 0.0f,		1.0f, 0.0f, 0.0f, 1.0f),
+		Vertex(	1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f, 1.0f),
+		Vertex(	0.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f, 1.0f),
 	};
 
 	std::string vsSource = R"(
 	#version 330 core
 
 	layout (location = 0) in vec3 aPos;
+	layout (location = 1) in vec4 aColor;
 
 	uniform float gScale;
+	uniform mat4 translation;
+
+	out vec4 Color;
 
 	void main()
 	{
-		gl_Position = vec4(aPos.x * gScale, aPos.y * gScale, aPos.z * gScale, 1.0f);
+		gl_Position = translation * vec4(aPos.x * gScale, aPos.y * gScale, aPos.z * gScale, 1.0f);
+		Color = aColor;
 	} 
 	)";
 	GLuint VS = CreateShader(GL_VERTEX_SHADER, vsSource);
@@ -82,11 +91,13 @@ int main()
 	std::string fsSource = R"(
 	#version 330 core
 
+	in vec4 Color;
+
 	out vec4 FragColor;
 	
 	void main()
 	{
-		FragColor = vec4(1.0, 0.0, 0.0, 1.0);  
+		FragColor = Color;  
 	}
 	)";
 	GLuint FS = CreateShader(GL_FRAGMENT_SHADER, fsSource);
@@ -100,9 +111,18 @@ int main()
 
 	GLuint VAO = CreateVertexArrayObject();
 
-	GLuint VBO = CreateVertexBufferObject(GL_ARRAY_BUFFER, positions, sizeof(positions), GL_STATIC_DRAW);
+	GLuint VBO = CreateVertexBufferObject(GL_ARRAY_BUFFER, vertices, sizeof(vertices), GL_STATIC_DRAW);
 
 	GLuint gScaleLocation = glGetUniformLocation(program, "gScale");
+
+	GLuint translationLocation = glGetUniformLocation(program, "translation");
+
+	float translation[] = {
+		1.0f, 0.0f, 0.0f, 0.2f,
+		0.0f, 1.0f, 0.0f, 0.2f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
 	
 
 
@@ -114,6 +134,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUniform1f(gScaleLocation, 0.5f);
+		glUniformMatrix4fv(translationLocation, 1, GL_TRUE, translation);
 
 		glUseProgram(program);
 
@@ -122,8 +143,10 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -165,7 +188,7 @@ std::string ReadFile(const std::string filePath)
 	return buffer.str();
 }
 
-GLuint CreateVertexBufferObject(GLenum target, float* vertices, GLsizeiptr size, GLenum usage)
+GLuint CreateVertexBufferObject(GLenum target, Vertex* vertices, GLsizeiptr size, GLenum usage)
 {
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
