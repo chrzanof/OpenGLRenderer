@@ -137,6 +137,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Matrix4x4_f.h" />
     <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\Vector3f.h" />
     <ClInclude Include="src\Vector4f.h" />
