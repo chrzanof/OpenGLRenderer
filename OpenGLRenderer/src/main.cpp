@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+#define _USE_MATH_DEFINES
 #include "stb_image.h"
 #include <iostream>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "Vector4f.h"
 #include "Vertex.h"
 #include "Matrix4x4_f.h"
+#include <math.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
