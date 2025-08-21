@@ -21,7 +21,9 @@ void processInput(GLFWwindow* window);
 
 std::string ReadFile(const std::string filePath);
 
-GLuint CreateVertexBufferObject(GLenum target, Vertex* vertices, GLsizeiptr size, GLenum usage);
+GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage);
+
+GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage);
 
 GLuint CreateVertexArrayObject();
 
@@ -72,6 +74,10 @@ int main()
 		Vertex(	0.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f, 1.0f),
 	};
 
+	unsigned int elements[] = {
+		0, 1, 2
+	};
+
 	std::string vsSource = R"(
 	#version 330 core
 
@@ -114,7 +120,8 @@ int main()
 
 	GLuint VAO = CreateVertexArrayObject();
 
-	GLuint VBO = CreateVertexBufferObject(GL_ARRAY_BUFFER, vertices, sizeof(vertices), GL_STATIC_DRAW);
+	GLuint VBO = CreateVertexBufferObject(vertices, sizeof(vertices), GL_STATIC_DRAW);
+	GLuint IBO = CreateIndexBufferObject(elements, sizeof(elements), GL_STATIC_DRAW);
 
 	GLuint gScaleLocation = glGetUniformLocation(program, "gScale");
 
@@ -142,8 +149,8 @@ int main()
 		glUseProgram(program);
 
 		glBindVertexArray(VAO);
-
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -151,9 +158,10 @@ int main()
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
 		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
 
 
 		glfwSwapBuffers(window);
@@ -191,14 +199,24 @@ std::string ReadFile(const std::string filePath)
 	return buffer.str();
 }
 
-GLuint CreateVertexBufferObject(GLenum target, Vertex* vertices, GLsizeiptr size, GLenum usage)
+GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
 {
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
-	glBindBuffer(target, VBO);
-	glBufferData(target, size, vertices, usage);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, size, vertices, usage);
 	return VBO;
 }
+
+GLuint CreateIndexBufferObject( unsigned int* elements, GLsizeiptr size, GLenum usage)
+{
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, elements, usage);
+	return VBO;
+}
+
 
 GLuint CreateVertexArrayObject()
 {
