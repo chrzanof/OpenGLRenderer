@@ -15,6 +15,8 @@
 #include "Matrix4x4_f.h"
 #include <math.h>
 
+#define ToRadians(x) x * M_PI / 180.0f
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void processInput(GLFWwindow* window);
@@ -31,7 +33,8 @@ GLuint CreateShader(GLenum type, std::string source);
 
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 
-
+int gWidth = 1000;
+int gHeight = 1000;
 
 int main()
 {
@@ -46,7 +49,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	// tworzymy okno
-	GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGLRenderer", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(gWidth, gHeight, "OpenGLRenderer", NULL, NULL);
 
 	if (!window)
 	{
@@ -63,19 +66,50 @@ int main()
 		return -1;
 	}
 	//ustawiamy przestrzeñ do rysowania
-	glViewport(0, 0, 1920, 1080);
+	glViewport(0, 0, gWidth, gHeight);
 
 	// ustawiamy callback zmiany rozmiaru okna
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	// Vertex definition (x, y, z, r, g, b, a)
 	Vertex vertices[] = {
-		Vertex(-1.0f, -1.0f, 0.0f,		1.0f, 0.0f, 0.0f, 1.0f),
-		Vertex(	1.0f, -1.0f, 0.0f,		0.0f, 1.0f, 0.0f, 1.0f),
-		Vertex(	0.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f, 1.0f),
+		// Front face (z = +0.5)
+		Vertex(-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f, 1.0f), // 0
+		Vertex(0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, 1.0f), // 1
+		Vertex(0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f, 1.0f), // 2
+		Vertex(-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f, 1.0f), // 3
+
+		// Back face (z = -0.5)
+		Vertex(-0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 1.0f, 1.0f), // 4
+		Vertex(0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 1.0f, 1.0f), // 5
+		Vertex(0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f), // 6
+		Vertex(-0.5f,  0.5f, -0.5f,   0.3f, 0.3f, 0.3f, 1.0f)  // 7
 	};
 
 	unsigned int elements[] = {
-		0, 1, 2
+		// Front face
+		0, 1, 2,
+		2, 3, 0,
+
+		// Right face
+		1, 5, 6,
+		6, 2, 1,
+
+		// Back face
+		5, 4, 7,
+		7, 6, 5,
+
+		// Left face
+		4, 0, 3,
+		3, 7, 4,
+
+		// Top face
+		3, 2, 6,
+		6, 7, 3,
+
+		// Bottom face
+		4, 5, 1,
+		1, 0, 4
 	};
 
 	std::string vsSource = R"(
@@ -85,13 +119,13 @@ int main()
 	layout (location = 1) in vec4 aColor;
 
 	uniform float gScale;
-	uniform mat4 translation;
+	uniform mat4 transform;
 
 	out vec4 Color;
 
 	void main()
 	{
-		gl_Position = translation * vec4(aPos.x * gScale, aPos.y * gScale, aPos.z * gScale, 1.0f);
+		gl_Position = transform * vec4(aPos.x * gScale, aPos.y * gScale, aPos.z * gScale, 1.0f);
 		Color = aColor;
 	} 
 	)";
@@ -125,26 +159,38 @@ int main()
 
 	GLuint gScaleLocation = glGetUniformLocation(program, "gScale");
 
-	GLuint translationLocation = glGetUniformLocation(program, "translation");
+	GLuint transformLocation = glGetUniformLocation(program, "transform");
 
-	float translation[] = {
-		1.0f, 0.0f, 0.0f, 0.2f,
-		0.0f, 1.0f, 0.0f, 0.2f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
-	
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
 
+	float angle = 0.0f;
+
+	float fov = 90.0f;
+	float n = 1.0f;
+	float f = 2.0f;
 
 	// pêtla renderingu
 	while (!glfwWindowShouldClose(window))
 	{
+		angle += 0.01f;
 		processInput(window);
+
+		auto projection = Matrix4x4_f::Perspective(ToRadians(fov), n, f, gWidth, gHeight);
+
+		auto translation = Matrix4x4_f::Translation(Vector3f{ 0.0f, 0.0f, 3.0f });
+
+		auto rotation = Matrix4x4_f::RotationXYZ(Vector3f{angle, angle, angle});
+
+		auto scale = Matrix4x4_f::Scale(Vector3f{ 1.5f, 1.5f, 1.5f });
+
+		auto finalTransform = projection * translation * rotation * scale;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUniform1f(gScaleLocation, 0.5f);
-		glUniformMatrix4fv(translationLocation, 1, GL_TRUE, translation);
+		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
 		glUseProgram(program);
 
@@ -158,7 +204,7 @@ int main()
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
 
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -175,6 +221,8 @@ int main()
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	gWidth = width;
+	gHeight = height;
 }
 
 void processInput(GLFWwindow* window)
