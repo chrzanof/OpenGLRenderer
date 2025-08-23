@@ -33,7 +33,7 @@ GLuint CreateShader(GLenum type, std::string source);
 
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 
-int gWidth = 1000;
+int gWidth = 1500;
 int gHeight = 1000;
 
 int main()
@@ -164,28 +164,68 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
+	Vector3f R = Vector3f(1.0f, 0.0f, 0.0f);
+	Vector3f U = Vector3f(0.0f, 1.0f, 0.0f);
+	Vector3f D = Vector3f(0.0f, 0.0f, 1.0f);
+	Vector3f cameraPosition = Vector3f{ 0.0f, 0.0f, -3.0f };
+
+	Matrix4x4_f camera = Matrix4x4_f{
+		R.x, R.y, R.z, -cameraPosition.x,
+		U.x, U.y, U.z, -cameraPosition.y,
+		D.x, D.y, D.z, -cameraPosition.z,
+		0,   0,   0,    1
+	};
 
 	float angle = 0.0f;
 
 	float fov = 90.0f;
 	float n = 1.0f;
-	float f = 2.0f;
+	float f = 10.0f;
 
 	// pêtla renderingu
 	while (!glfwWindowShouldClose(window))
 	{
-		angle += 0.01f;
 		processInput(window);
 
+		Vector3f cameraTarget = Vector3f{ 0.0f, 0.0f, 0.0f };
+		Vector3f cameraPosition = Vector3f{ 4 * sin(angle), 0.0f,2 * cos(angle) };
+
+		Vector3f D = (cameraTarget - cameraPosition).Normalized();
+		
+		Vector3f R = Vector3f::Cross(Vector3f(0.0f, 1.0f, 0.0f), D).Normalized();
+		Vector3f U = Vector3f::Cross(D, R).Normalized();
+		
+		// Vector3f R = Vector3f{1.0f, 0.0f, 0.0f};
+		// Vector3f U = Vector3f{0.0f, 1.0f, 0.0f};
+		// Vector3f D = Vector3f{0.0f, 0.0f, 1.0f};
+
+		Matrix4x4_f cameraRotation = Matrix4x4_f{
+			R.x, R.y, R.z,  0,
+			U.x, U.y, U.z,  0,
+			D.x, D.y, D.z,  0,
+			0,   0,   0,    1
+		};
+
+		Matrix4x4_f cameraTranslation = Matrix4x4_f{
+			1, 0, 0,  -cameraPosition.x,
+			0, 1, 0,  -cameraPosition.y,
+			0, 0, 1,  -cameraPosition.z,
+			0, 0, 0,  1
+		};
+		
 		auto projection = Matrix4x4_f::Perspective(ToRadians(fov), n, f, gWidth, gHeight);
 
-		auto translation = Matrix4x4_f::Translation(Vector3f{ 0.0f, 0.0f, 3.0f });
+		auto translation = Matrix4x4_f::Translation(Vector3f{ 0.0f, 0.0f, 0.0f });
 
-		auto rotation = Matrix4x4_f::RotationXYZ(Vector3f{angle, angle, angle});
+		auto rotation = Matrix4x4_f::RotationXYZ(Vector3f{angle, angle, 0});
 
 		auto scale = Matrix4x4_f::Scale(Vector3f{ 1.5f, 1.5f, 1.5f });
 
-		auto finalTransform = projection * translation * rotation * scale;
+		auto world = translation * rotation * scale;
+
+		auto view = cameraRotation * cameraTranslation;
+
+		auto finalTransform = projection * view * world;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -212,6 +252,7 @@ int main()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		angle += 0.005f;
 	}
 
 	glfwTerminate();
