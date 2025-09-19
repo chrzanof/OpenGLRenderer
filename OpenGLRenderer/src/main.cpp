@@ -112,37 +112,10 @@ int main()
 		1, 0, 4
 	};
 
-	std::string vsSource = R"(
-	#version 330 core
-
-	layout (location = 0) in vec3 aPos;
-	layout (location = 1) in vec4 aColor;
-
-	uniform float gScale;
-	uniform mat4 transform;
-
-	out vec4 Color;
-
-	void main()
-	{
-		gl_Position = transform * vec4(aPos.x * gScale, aPos.y * gScale, aPos.z * gScale, 1.0f);
-		Color = aColor;
-	} 
-	)";
+	std::string vsSource = ReadFile("Shader.vs");
 	GLuint VS = CreateShader(GL_VERTEX_SHADER, vsSource);
 
-	std::string fsSource = R"(
-	#version 330 core
-
-	in vec4 Color;
-
-	out vec4 FragColor;
-	
-	void main()
-	{
-		FragColor = Color;  
-	}
-	)";
+	std::string fsSource = ReadFile("Shader.fs");
 	GLuint FS = CreateShader(GL_FRAGMENT_SHADER, fsSource);
 
 
