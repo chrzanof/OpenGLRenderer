@@ -125,6 +125,9 @@ int main()
 	glDeleteShader(VS);
 	glDeleteShader(FS);
 
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("concrete.jpg", &width, &height, &nrChannels, 0);
+
 	GLuint VAO = CreateVertexArrayObject();
 
 	GLuint VBO = CreateVertexBufferObject(vertices, sizeof(vertices), GL_STATIC_DRAW);
@@ -141,13 +144,6 @@ int main()
 	Vector3f U = Vector3f(0.0f, 1.0f, 0.0f);
 	Vector3f D = Vector3f(0.0f, 0.0f, 1.0f);
 	Vector3f cameraPosition = Vector3f{ 0.0f, 0.0f, -3.0f };
-
-	Matrix4x4_f camera = Matrix4x4_f{
-		R.x, R.y, R.z, -cameraPosition.x,
-		U.x, U.y, U.z, -cameraPosition.y,
-		D.x, D.y, D.z, -cameraPosition.z,
-		0,   0,   0,    1
-	};
 
 	float angle = 0.0f;
 
