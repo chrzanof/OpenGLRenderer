@@ -33,6 +33,8 @@ GLuint CreateShader(GLenum type, std::string source);
 
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 
+GLuint CreateTexture2d(const std::string& fileName);
+
 int gWidth = 1500;
 int gHeight = 1000;
 
@@ -74,16 +76,16 @@ int main()
 	// Vertex definition (x, y, z, r, g, b, a)
 	Vertex vertices[] = {
 		// Front face (z = +0.5)
-		Vertex(-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f, 1.0f), // 0
-		Vertex(0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, 1.0f), // 1
-		Vertex(0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f, 1.0f), // 2
-		Vertex(-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f, 1.0f), // 3
+		Vertex(-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f), // 0 bottom-left
+		Vertex(0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f), // 1 bottom-right
+		Vertex(0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f), // 2 top-right
+		Vertex(-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f), // 3 top-left
 
 		// Back face (z = -0.5)
-		Vertex(-0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 1.0f, 1.0f), // 4
-		Vertex(0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 1.0f, 1.0f), // 5
-		Vertex(0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f), // 6
-		Vertex(-0.5f,  0.5f, -0.5f,   0.3f, 0.3f, 0.3f, 1.0f)  // 7
+		Vertex(-0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f), // 4 bottom-right
+		Vertex(0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f), // 5 bottom-left
+		Vertex(0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 1.0f), // 6 top-left
+		Vertex(-0.5f,  0.5f, -0.5f,   0.3f, 0.3f, 0.3f, 1.0f,   1.0f, 1.0f) // 7 top-right
 	};
 
 	unsigned int elements[] = {
@@ -125,8 +127,8 @@ int main()
 	glDeleteShader(VS);
 	glDeleteShader(FS);
 
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load("concrete.jpg", &width, &height, &nrChannels, 0);
+	GLuint texture = CreateTexture2d("concrete.jpg");
+	
 
 	GLuint VAO = CreateVertexArrayObject();
 
@@ -203,15 +205,19 @@ int main()
 
 		glUseProgram(program);
 
+		glBindTexture(GL_TEXTURE_2D, texture);
+
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vector3f) + sizeof(Vector4f)));
 
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -255,6 +261,33 @@ std::string ReadFile(const std::string filePath)
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
+}
+
+GLuint CreateTexture2d(const std::string& fileName)
+{
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+	return texture;
 }
 
 GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
