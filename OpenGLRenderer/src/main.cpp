@@ -9,10 +9,10 @@
 #include <fstream>
 #include <sstream>
 
-#include "Vector3f.h"
-#include "Vector4f.h"
-#include "Vertex.h"
-#include "Matrix4x4_f.h"
+#include "math/Vector3f.h"
+#include "math/Vector4f.h"
+#include "math/Vertex.h"
+#include "math/Matrix4x4_f.h"
 #include <math.h>
 
 #define ToRadians(x) x * M_PI / 180.0f
@@ -114,10 +114,10 @@ int main()
 		1, 0, 4
 	};
 
-	std::string vsSource = ReadFile("Shader.vs");
+	std::string vsSource = ReadFile("shaders/vert.glsl");
 	GLuint VS = CreateShader(GL_VERTEX_SHADER, vsSource);
 
-	std::string fsSource = ReadFile("Shader.fs");
+	std::string fsSource = ReadFile("shaders/frag.glsl");
 	GLuint FS = CreateShader(GL_FRAGMENT_SHADER, fsSource);
 
 
@@ -127,7 +127,7 @@ int main()
 	glDeleteShader(VS);
 	glDeleteShader(FS);
 
-	GLuint texture = CreateTexture2d("concrete.jpg");
+	GLuint texture = CreateTexture2d("textures/concrete.jpg");
 	
 
 	GLuint VAO = CreateVertexArrayObject();
