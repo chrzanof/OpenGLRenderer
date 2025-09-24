@@ -15,6 +15,8 @@
 #include "math/Matrix4x4_f.h"
 #include <math.h>
 
+#include "Shader.h"
+
 #define ToRadians(x) x * M_PI / 180.0f
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -28,8 +30,6 @@ GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
 GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage);
 
 GLuint CreateVertexArrayObject();
-
-GLuint CreateShader(GLenum type, std::string source);
 
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 
@@ -114,18 +114,17 @@ int main()
 		1, 0, 4
 	};
 
-	std::string vsSource = ReadFile("shaders/vert.glsl");
-	GLuint VS = CreateShader(GL_VERTEX_SHADER, vsSource);
 
-	std::string fsSource = ReadFile("shaders/frag.glsl");
-	GLuint FS = CreateShader(GL_FRAGMENT_SHADER, fsSource);
+	Shader vertexShader = Shader(ShaderType::vertexShader, "shaders/vert.glsl");
 
 
-	GLuint program = CreateProgram(VS, FS);
-	
+	Shader fragmentShader = Shader(ShaderType::fragmentShader, "shaders/frag.glsl");
 
-	glDeleteShader(VS);
-	glDeleteShader(FS);
+
+	GLuint program = CreateProgram(vertexShader.GetId(), fragmentShader.GetId());
+
+	vertexShader.Delete();
+	fragmentShader.Delete();
 
 	GLuint texture = CreateTexture2d("textures/concrete.jpg");
 	
@@ -317,24 +316,6 @@ GLuint CreateVertexArrayObject()
 	return VAO;
 }
 
-GLuint CreateShader(GLenum type, std::string source)
-{
-	GLuint shader = glCreateShader(type);
-	const char* sourceCStr = source.c_str();
-	glShaderSource(shader, 1, &sourceCStr, NULL);
-	glCompileShader(shader);
-
-	GLint shaderCompiled;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompiled);
-	if (shaderCompiled != GL_TRUE)
-	{
-		GLsizei log_length = 0;
-		GLchar message[1024];
-		glGetShaderInfoLog(shader, 1024, &log_length, message);
-		std::cout << message;
-	}
-	return shader;
-}
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader)
 {
 	GLuint program = glCreateProgram();

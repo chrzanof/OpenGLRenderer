@@ -134,9 +134,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\libs\GLAD\src\glad.c" />
+    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\math\Matrix4x4_f.h" />
     <ClInclude Include="src\math\stb_image.h" />
     <ClInclude Include="src\math\Vector2f.h" />
