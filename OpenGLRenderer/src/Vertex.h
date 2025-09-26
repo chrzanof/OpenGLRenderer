@@ -1,9 +1,8 @@
 #pragma once
-#include <windows.h>
 
-#include "Vector3f.h"
-#include "Vector4f.h"
-#include "Vector2f.h"
+#include "math/Vector3f.h"
+#include "math/Vector4f.h"
+#include "math/Vector2f.h"
 
 class Vertex
 {

@@ -9,11 +9,12 @@
 #include <fstream>
 #include <sstream>
 
+#include "math/Vector2f.h"
 #include "math/Vector3f.h"
 #include "math/Vector4f.h"
-#include "math/Vertex.h"
 #include "math/Matrix4x4_f.h"
-#include <math.h>
+#include "Vertex.h"
+
 
 #include "Shader.h"
 #include "ShaderProgram.h"

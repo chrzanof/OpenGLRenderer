@@ -29,7 +29,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\math\stb_image.h">
+    <ClInclude Include="src\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\math\Vector3f.h">
@@ -38,7 +38,7 @@
     <ClInclude Include="src\math\Vector4f.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\math\Vertex.h">
+    <ClInclude Include="src\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\math\Matrix4x4_f.h">
