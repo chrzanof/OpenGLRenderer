@@ -37,7 +37,7 @@ void Shader::Delete()
 	glDeleteShader(m_id);
 }
 
-GLuint Shader::GetId()
+GLuint Shader::GetId() const
 {
 	return m_id;
 }

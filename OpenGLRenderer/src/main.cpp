@@ -16,6 +16,7 @@
 #include <math.h>
 
 #include "Shader.h"
+#include "ShaderProgram.h"
 
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -30,8 +31,6 @@ GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
 GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage);
 
 GLuint CreateVertexArrayObject();
-
-GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 
 GLuint CreateTexture2d(const std::string& fileName);
 
@@ -114,17 +113,10 @@ int main()
 		1, 0, 4
 	};
 
-
-	Shader vertexShader = Shader(ShaderType::vertexShader, "shaders/vert.glsl");
-
-
-	Shader fragmentShader = Shader(ShaderType::fragmentShader, "shaders/frag.glsl");
-
-
-	GLuint program = CreateProgram(vertexShader.GetId(), fragmentShader.GetId());
-
-	vertexShader.Delete();
-	fragmentShader.Delete();
+	ShaderProgram program = ShaderProgram(
+		"shaders/vert.glsl",
+		"shaders/frag.glsl"
+	);
 
 	GLuint texture = CreateTexture2d("textures/concrete.jpg");
 	
@@ -134,9 +126,9 @@ int main()
 	GLuint VBO = CreateVertexBufferObject(vertices, sizeof(vertices), GL_STATIC_DRAW);
 	GLuint IBO = CreateIndexBufferObject(elements, sizeof(elements), GL_STATIC_DRAW);
 
-	GLuint gScaleLocation = glGetUniformLocation(program, "gScale");
+	GLuint gScaleLocation = glGetUniformLocation(program.GetId(), "gScale");
 
-	GLuint transformLocation = glGetUniformLocation(program, "transform");
+	GLuint transformLocation = glGetUniformLocation(program.GetId(), "transform");
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
@@ -202,7 +194,7 @@ int main()
 		glUniform1f(gScaleLocation, 0.5f);
 		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
-		glUseProgram(program);
+		glUseProgram(program.GetId());
 
 		glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -314,14 +306,4 @@ GLuint CreateVertexArrayObject()
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	return VAO;
-}
-
-GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader)
-{
-	GLuint program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-	glLinkProgram(program);
-	glUseProgram(program);
-	return program;
 }

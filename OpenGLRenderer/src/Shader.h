@@ -13,7 +13,7 @@ class Shader
 public:
 	Shader(ShaderType type, const std::string& filePath);
 	void Delete();
-	GLuint GetId();
+	GLuint GetId() const;
 	const std::string& GetSource();
 
 private:
