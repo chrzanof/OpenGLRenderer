@@ -5,9 +5,6 @@
 #define _USE_MATH_DEFINES
 #include "stb_image.h"
 #include <iostream>
-#include <vector>
-#include <fstream>
-#include <sstream>
 
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
@@ -18,14 +15,13 @@
 
 #include "Shader.h"
 #include "ShaderProgram.h"
+#include "WorldTrans.h"
 
 #define ToRadians(x) x * M_PI / 180.0f
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void processInput(GLFWwindow* window);
-
-std::string ReadFile(const std::string filePath);
 
 GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage);
 
@@ -145,6 +141,8 @@ int main()
 	float n = 1.0f;
 	float f = 10.0f;
 
+	WorldTrans worldTrans;
+
 	// pêtla renderingu
 	while (!glfwWindowShouldClose(window))
 	{
@@ -157,10 +155,6 @@ int main()
 		
 		Vector3f R = Vector3f::Cross(Vector3f(0.0f, 1.0f, 0.0f), D).Normalized();
 		Vector3f U = Vector3f::Cross(D, R).Normalized();
-		
-		// Vector3f R = Vector3f{1.0f, 0.0f, 0.0f};
-		// Vector3f U = Vector3f{0.0f, 1.0f, 0.0f};
-		// Vector3f D = Vector3f{0.0f, 0.0f, 1.0f};
 
 		Matrix4x4_f cameraRotation = Matrix4x4_f{
 			R.x, R.y, R.z,  0,
@@ -178,24 +172,20 @@ int main()
 		
 		auto projection = Matrix4x4_f::Perspective(ToRadians(fov), n, f, gWidth, gHeight);
 
-		auto translation = Matrix4x4_f::Translation(Vector3f{ 0.0f, 0.0f, 0.0f });
-
-		auto rotation = Matrix4x4_f::RotationXYZ(Vector3f{angle, angle, 0});
-
-		auto scale = Matrix4x4_f::Scale(Vector3f{ 1.5f, 1.5f, 1.5f });
-
-		auto world = translation * rotation * scale;
+		worldTrans.SetPosition(0.0f, 0.0f, 0.0f);
+		worldTrans.SetRotation(angle, angle, 0.0f);
+		worldTrans.SetScale(1.5f);
 
 		auto view = cameraRotation * cameraTranslation;
 
-		auto finalTransform = projection * view * world;
+		auto finalTransform = projection * view * worldTrans.GetMatrix();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUniform1f(gScaleLocation, 0.5f);
 		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
-		glUseProgram(program.GetId());
+		program.Use();
 
 		glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -239,20 +229,6 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
-}
-
-std::string ReadFile(const std::string filePath)
-{
-	std::ifstream file;
-	file.open(filePath);
-	if(file.fail())
-	{
-		std::cout << "Error opening the file: " << filePath << "\n";
-	}
-
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return buffer.str();
 }
 
 GLuint CreateTexture2d(const std::string& fileName)

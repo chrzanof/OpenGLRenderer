@@ -137,6 +137,7 @@
     <ClCompile Include="src\ShaderProgram.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\WorldTrans.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ShaderProgram.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="src\math\Vector3f.h" />
     <ClInclude Include="src\math\Vector4f.h" />
     <ClInclude Include="src\Vertex.h" />
+    <ClInclude Include="src\WorldTrans.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.glsl" />

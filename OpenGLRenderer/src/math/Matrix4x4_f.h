@@ -1,5 +1,7 @@
 #pragma once
 #include <math.h>
+#include "Vector3f.h"
+#include "Vector4f.h"
 
 class Matrix4x4_f
 {
@@ -65,31 +67,29 @@ public:
 	static Matrix4x4_f RotationX(float radians)
 	{
 		return Matrix4x4_f{
-			1,  0,		        0,	           0,
-			0,  cos(radians),  -sin(radians),  0,
-			0,  sin(radians),   cos(radians),  0,
-			0,  0, 		        0,		       1
-
+			1.0f,  0.0f,					0.0f,					 0.0f,
+			0.0f,  float(cos(radians)),		float( - sin(radians)),	 0.0f,
+			0.0f,  float(sin(radians)),		float(cos(radians)),	 0.0f,
+			0.0f,  0.0f, 					0.0f,					 1.0f
 		};
 	}
 	static Matrix4x4_f RotationY(float radians)
 	{
 		return Matrix4x4_f{
-			 cos(radians),	0,  sin(radians),  0,
-			 0,		        1,  0,             0,
-			-sin(radians),  0,  cos(radians),  0,
-			 0,		        0, 	0,	           1
-
+			 float(cos(radians)),		0.0f,  float(sin(radians)),  0.0f,
+			 0.0f,						1.0f,  0.0f,				 0.0f,
+			 float(-sin(radians)),		0.0f,  float(cos(radians)),  0.0f,
+			 0.0f,						0.0f,  0.0f,				 1.0f
 		};
 	}
 
 	static Matrix4x4_f RotationZ(float radians)
 	{
 		return Matrix4x4_f{
-			cos(radians),		  -sin(radians),		  0,	 0,
-			sin(radians),		   cos(radians),          0,     0,
-			0,                     0,                     1,     0,
-			0,		               0, 	                  0,	 1
+			float(cos(radians)), float(-sin(radians)),	0.0f,  0.0f,
+			float(sin(radians)), float(cos(radians)),   0.0f,  0.0f,
+			0.0f,                0.0f,					1.0f,  0.0f,
+			0.0f,		         0.0f, 					0.0f,  1.0f
 
 		};
 	}
