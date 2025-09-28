@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include "stb_image.h"
 #include <iostream>
+#include <vector>
 
 #include "Camera.h"
 #include "math/Vector2f.h"
@@ -70,8 +71,8 @@ int main()
 	// ustawiamy callback zmiany rozmiaru okna
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	// Vertex definition (x, y, z, r, g, b, a)
-	Vertex vertices[] = {
+	// Vertex definition (x, y, z, r, g, b, a, u, v)
+	std::vector<Vertex> vertices = {
 		// Front face (z = +0.5)
 		Vertex(-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f), // 0 bottom-left
 		Vertex(0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f), // 1 bottom-right
@@ -85,7 +86,7 @@ int main()
 		Vertex(-0.5f,  0.5f, -0.5f,   0.3f, 0.3f, 0.3f, 1.0f,   1.0f, 1.0f) // 7 top-right
 	};
 
-	unsigned int elements[] = {
+	std::vector<unsigned int> elements = {
 		// Front face
 		0, 1, 2,
 		2, 3, 0,
@@ -111,18 +112,20 @@ int main()
 		1, 0, 4
 	};
 
+	std::cout << &elements.back() - &elements.front();
+
 	ShaderProgram program = ShaderProgram(
 		"shaders/vert.glsl",
 		"shaders/frag.glsl"
 	);
 
-	GLuint texture = CreateTexture2d("textures/concrete.jpg");
+	GLuint texture = CreateTexture2d("textures/container.jpg");
 	
 
 	GLuint VAO = CreateVertexArrayObject();
 
-	GLuint VBO = CreateVertexBufferObject(vertices, sizeof(vertices), GL_STATIC_DRAW);
-	GLuint IBO = CreateIndexBufferObject(elements, sizeof(elements), GL_STATIC_DRAW);
+	GLuint VBO = CreateVertexBufferObject(&vertices.front(), sizeof(vertices.front()) * vertices.size(), GL_STATIC_DRAW);
+	GLuint IBO = CreateIndexBufferObject(&elements.front(), sizeof(elements.front()) * elements.size(), GL_STATIC_DRAW);
 
 	GLuint gScaleLocation = glGetUniformLocation(program.GetId(), "gScale");
 
@@ -245,7 +248,7 @@ GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
 	return VBO;
 }
 
-GLuint CreateIndexBufferObject( unsigned int* elements, GLsizeiptr size, GLenum usage)
+GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage)
 {
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
