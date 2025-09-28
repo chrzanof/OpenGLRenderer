@@ -139,6 +139,7 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\WorldTrans.cpp" />
+    <ClCompile Include="src\Texture2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="src\math\Vector4f.h" />
     <ClInclude Include="src\Vertex.h" />
     <ClInclude Include="src\WorldTrans.h" />
+    <ClInclude Include="src\Texture2d.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.glsl" />
@@ -160,6 +162,7 @@
     <Image Include="textures\awesomeface.png" />
     <Image Include="textures\concrete.jpg" />
     <Image Include="textures\container.jpg" />
+    <Image Include="textures\container2.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

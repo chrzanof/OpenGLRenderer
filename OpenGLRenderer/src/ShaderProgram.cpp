@@ -6,9 +6,10 @@ ShaderProgram::ShaderProgram(Shader&& vertexShader, Shader&& fragmentShader)
 	glAttachShader(this->m_id, vertexShader.GetId());
 	glAttachShader(this->m_id, fragmentShader.GetId());
 	glLinkProgram(this->m_id);
-	this->Use();
+	this->Bind();
 	vertexShader.Delete();
 	fragmentShader.Delete();
+	this->Unbind();
 }
 
 ShaderProgram::ShaderProgram(const std::string& vertexShaderFilePath, const std::string& fragmentShaderFilePath)
@@ -25,7 +26,12 @@ GLuint ShaderProgram::GetId() const
 	return this->m_id;
 }
 
-void ShaderProgram::Use() const
+void ShaderProgram::Bind() const
 {
 	glUseProgram(this->m_id);
+}
+
+void ShaderProgram::Unbind() const
+{
+	glUseProgram(0);
 }

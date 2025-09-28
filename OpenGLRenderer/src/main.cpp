@@ -18,6 +18,7 @@
 #include "Shader.h"
 #include "ShaderProgram.h"
 #include "WorldTrans.h"
+#include "Texture2d.h"
 
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -30,8 +31,6 @@ GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
 GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage);
 
 GLuint CreateVertexArrayObject();
-
-GLuint CreateTexture2d(const std::string& fileName);
 
 int gWidth = 1500;
 int gHeight = 1000;
@@ -112,14 +111,12 @@ int main()
 		1, 0, 4
 	};
 
-	std::cout << &elements.back() - &elements.front();
-
 	ShaderProgram program = ShaderProgram(
 		"shaders/vert.glsl",
 		"shaders/frag.glsl"
 	);
 
-	GLuint texture = CreateTexture2d("textures/container.jpg");
+	Texture2d texture = Texture2d("textures/container2.png");
 	
 
 	GLuint VAO = CreateVertexArrayObject();
@@ -146,6 +143,14 @@ int main()
 
 	WorldTrans worldTrans;
 
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vector3f) + sizeof(Vector4f)));
+
 	// pêtla renderingu
 	while (!glfwWindowShouldClose(window))
 	{
@@ -165,33 +170,26 @@ int main()
 		glUniform1f(gScaleLocation, 0.5f);
 		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
-		program.Use();
+		program.Bind();
 
-		glBindTexture(GL_TEXTURE_2D, texture);
+		texture.Bind();
 
 		glBindVertexArray(VAO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+		// glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vector3f) + sizeof(Vector4f)));
 
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
 
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		angle += 0.005f;
 	}
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 
 	glfwTerminate();
 	return 0;
@@ -210,33 +208,6 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
-}
-
-GLuint CreateTexture2d(const std::string& fileName)
-{
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
-
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
-	return texture;
 }
 
 GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)

@@ -12,7 +12,8 @@ public:
 	              const std::string& fragmentShaderFilePath);
 
 	GLuint GetId() const;
-	void Use() const;
+	void Bind() const;
+	void Unbind() const;
 
 private:
 	GLuint m_id;
