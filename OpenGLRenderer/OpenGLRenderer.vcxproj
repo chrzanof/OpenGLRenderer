@@ -140,6 +140,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\WorldTrans.cpp" />
     <ClCompile Include="src\Texture2d.cpp" />
+    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="src\Vertex.h" />
     <ClInclude Include="src\WorldTrans.h" />
     <ClInclude Include="src\Texture2d.h" />
+    <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.glsl" />
