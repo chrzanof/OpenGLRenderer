@@ -1,6 +1,6 @@
 #version 330 core
 
-in vec4 Color;
+in vec3 Normal;
 in vec2 TexCoord;
 
 uniform sampler2D ourTexture;

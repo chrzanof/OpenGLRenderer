@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "Camera.h"
+#include "Mesh.h"
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
-#include "math/Vector4f.h"
+#include "math/Vector3f.h"
 #include "math/Matrix4x4_f.h"
 #include "Vertex.h"
 
@@ -24,16 +25,6 @@
 #define ToRadians(x) x * M_PI / 180.0f
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-
-GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage);
-
-GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage);
-
-GLuint CreateVertexArrayObject();
-
-int gWidth = 1500;
-int gHeight = 1000;
 
 int main()
 {
@@ -53,46 +44,55 @@ int main()
 	// ustawiamy callback zmiany rozmiaru okna
 	window.SetFrameBufferSizeCallback(framebuffer_size_callback);
 
-	// Vertex definition (x, y, z, r, g, b, a, u, v)
+	// 24 vertices: 6 faces × 4 verts each
 	std::vector<Vertex> vertices = {
-		// Front face (z = +0.5)
-		Vertex(-0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f, 1.0f,   0.0f, 0.0f), // 0 bottom-left
-		Vertex(0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f, 1.0f,   1.0f, 0.0f), // 1 bottom-right
-		Vertex(0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f, 1.0f,   1.0f, 1.0f), // 2 top-right
-		Vertex(-0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f, 1.0f,   0.0f, 1.0f), // 3 top-left
+		// Front face (z = +0.5, normal = +Z)
+		{-0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f}, // bottom-left
+		{ 0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f}, // bottom-right
+		{ 0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f}, // top-right
+		{-0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f}, // top-left
 
-		// Back face (z = -0.5)
-		Vertex(-0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 1.0f, 1.0f,   1.0f, 0.0f), // 4 bottom-right
-		Vertex(0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 1.0f, 1.0f,   0.0f, 0.0f), // 5 bottom-left
-		Vertex(0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,   0.0f, 1.0f), // 6 top-left
-		Vertex(-0.5f,  0.5f, -0.5f,   0.3f, 0.3f, 0.3f, 1.0f,   1.0f, 1.0f) // 7 top-right
+		// Back face (z = -0.5, normal = -Z)
+		{ 0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f}, // bottom-left
+		{-0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f}, // bottom-right
+		{-0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f}, // top-right
+		{ 0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f}, // top-left
+
+		// Left face (x = -0.5, normal = -X)
+		{-0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
+		{-0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
+		{-0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,   1.0f, 1.0f}, // top-right
+		{-0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // top-left
+
+		// Right face (x = +0.5, normal = +X)
+		{ 0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
+		{ 0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
+		{ 0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f}, // top-right
+		{ 0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // top-left
+
+		// Top face (y = +0.5, normal = +Y)
+		{-0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
+		{ 0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
+		{ 0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f}, // top-right
+		{-0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f}, // top-left
+
+		// Bottom face (y = -0.5, normal = -Y)
+		{-0.5f, -0.5f, -0.5f,   0.0f, -1.0f, 0.0f,  0.0f, 0.0f}, // bottom-left
+		{ 0.5f, -0.5f, -0.5f,   0.0f, -1.0f, 0.0f,  1.0f, 0.0f}, // bottom-right
+		{ 0.5f, -0.5f,  0.5f,   0.0f, -1.0f, 0.0f,  1.0f, 1.0f}, // top-right
+		{-0.5f, -0.5f,  0.5f,   0.0f, -1.0f, 0.0f,  0.0f, 1.0f}  // top-left
 	};
 
+	// 36 indices (2 triangles per face × 6 faces)
 	std::vector<unsigned int> elements = {
-		// Front face
-		0, 1, 2,
-		2, 3, 0,
-
-		// Right face
-		1, 5, 6,
-		6, 2, 1,
-
-		// Back face
-		5, 4, 7,
-		7, 6, 5,
-
-		// Left face
-		4, 0, 3,
-		3, 7, 4,
-
-		// Top face
-		3, 2, 6,
-		6, 7, 3,
-
-		// Bottom face
-		4, 5, 1,
-		1, 0, 4
+		0,  1,  2,   2,  3,  0,       // Front
+		4,  5,  6,   6,  7,  4,       // Back
+		8,  9, 10,  10, 11,  8,       // Left
+		12, 13, 14, 14, 15, 12,       // Right
+		16, 17, 18, 18, 19, 16,       // Top
+		20, 21, 22, 22, 23, 20        // Bottom
 	};
+
 
 	ShaderProgram program = ShaderProgram(
 		"shaders/vert.glsl",
@@ -100,14 +100,6 @@ int main()
 	);
 
 	Texture2d texture = Texture2d("textures/container2.png");
-	
-
-	GLuint VAO = CreateVertexArrayObject();
-
-	GLuint VBO = CreateVertexBufferObject(&vertices.front(), sizeof(vertices.front()) * vertices.size(), GL_STATIC_DRAW);
-	GLuint IBO = CreateIndexBufferObject(&elements.front(), sizeof(elements.front()) * elements.size(), GL_STATIC_DRAW);
-
-	GLuint gScaleLocation = glGetUniformLocation(program.GetId(), "gScale");
 
 	GLuint transformLocation = glGetUniformLocation(program.GetId(), "transform");
 
@@ -121,18 +113,15 @@ int main()
 	camera.SetFov(ToRadians(90.0f));
 	camera.SetNear(1.0f);
 	camera.SetFar(10.0f);
-	camera.SetWidth(gWidth);
-	camera.SetHeight(gHeight);
+	camera.SetWidth(window.GetWidth());
+	camera.SetHeight(window.GetHeight());
 
 	WorldTrans worldTrans;
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
+	Mesh mesh{vertices, elements};
+	mesh.setupMesh();
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vector3f) + sizeof(Vector4f)));
+	
 
 	// pêtla renderingu
 	while (!window.ShouldClose())
@@ -144,25 +133,21 @@ int main()
 
 		worldTrans.SetPosition(0.0f, 0.0f, 0.0f);
 		worldTrans.SetRotation(angle, angle, 0.0f);
-		worldTrans.SetScale(1.5f);
+		worldTrans.SetScale(1.0f);
 
 		auto finalTransform = camera.GetProjectionMatrix() * camera.GetViewMatrix() * worldTrans.GetMatrix();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUniform1f(gScaleLocation, 0.5f);
 		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
 		program.Bind();
 
 		texture.Bind();
 
-		glBindVertexArray(VAO);
-		// glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+		mesh.Bind();
 
-
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, mesh.GetIndicesData().size(), GL_UNSIGNED_INT, 0);
 
 		window.SwapBuffers();
 
@@ -181,33 +166,4 @@ int main()
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-	gWidth = width;
-	gHeight = height;
-}
-
-GLuint CreateVertexBufferObject(Vertex* vertices, GLsizeiptr size, GLenum usage)
-{
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, size, vertices, usage);
-	return VBO;
-}
-
-GLuint CreateIndexBufferObject(unsigned int* elements, GLsizeiptr size, GLenum usage)
-{
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, elements, usage);
-	return VBO;
-}
-
-
-GLuint CreateVertexArrayObject()
-{
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	return VAO;
 }

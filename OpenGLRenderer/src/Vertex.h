@@ -1,27 +1,27 @@
 #pragma once
 
 #include "math/Vector3f.h"
-#include "math/Vector4f.h"
+#include "math/Vector3f.h"
 #include "math/Vector2f.h"
 
 class Vertex
 {
 public:
 	Vector3f position;
-	Vector4f color;
-	Vector2f texel;
+	Vector3f normal;
+	Vector2f uv;
 
-	Vertex(Vector3f _position, Vector4f _color, Vector2f _texel)
+	Vertex(Vector3f position, Vector3f normal, Vector2f texCoord)
 	:
-	position(_position),
-	color(_color),
-	texel(_texel) {}
+	position(position),
+	normal(normal),
+	uv(texCoord) {}
 
-	Vertex(float _x, float _y, float _z,
-	       float _r, float _g, float _b, float _a,
-		   float _u, float _v)
+	Vertex(float x, float y, float z,
+	       float nx, float ny, float nz,
+		   float u, float v)
 	:
-	position(Vector3f(_x, _y, _z)),
-	color(Vector4f(_r, _g, _b, _a)),
-	texel(Vector2f(_u, _v)) {}
+	position(Vector3f(x, y, z)),
+	normal(Vector3f(nx, ny, nz)),
+	uv(Vector2f(u, v)) {}
 };

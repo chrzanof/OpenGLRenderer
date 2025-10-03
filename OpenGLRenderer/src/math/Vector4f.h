@@ -1,6 +1,6 @@
 #pragma once
 
-class Vector4f
+class Vector3f
 {
 public:
 	float x;
@@ -8,32 +8,32 @@ public:
 	float z;
 	float w;
 
-	Vector4f(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w)
+	Vector3f(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w)
 	{
 	}
 
-	Vector4f(Vector3f vector3f, float _w): x(vector3f.x), y(vector3f.y), z(vector3f.z), w(_w)
+	Vector3f(Vector3f vector3f, float _w): x(vector3f.x), y(vector3f.y), z(vector3f.z), w(_w)
 	{
 	}
 
-	static float Dot(Vector4f v1, Vector4f v2)
+	static float Dot(Vector3f v1, Vector3f v2)
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 	}
 
-	Vector4f Normalized()
+	Vector3f Normalized()
 	{
 		float length = sqrt(x * x + y * y + z * z + w * w);
-		return Vector4f{ x / length, y / length, z / length, w / length };
+		return Vector3f{ x / length, y / length, z / length, w / length };
 	}
 
-	Vector4f operator+(Vector4f other)
+	Vector3f operator+(Vector3f other)
 	{
-		return Vector4f(x + other.x, y + other.y, z + other.z, w + other.w);
+		return Vector3f(x + other.x, y + other.y, z + other.z, w + other.w);
 	}
-	Vector4f operator-(Vector4f other)
+	Vector3f operator-(Vector3f other)
 	{
-		return Vector4f(x - other.x, y - other.y, z - other.z, w - other.w);
+		return Vector3f(x - other.x, y - other.y, z - other.z, w - other.w);
 	}
 
 };
