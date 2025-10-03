@@ -6,6 +6,13 @@ m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), m_VAO(0), m_VBO(
 	
 }
 
+Mesh::~Mesh()
+{
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO);
+	glDeleteBuffers(1, &m_EBO);
+}
+
 void Mesh::setupMesh()
 {
 	glGenVertexArrays(1, &m_VAO);

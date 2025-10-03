@@ -9,6 +9,7 @@ class Mesh
 {
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+	~Mesh();
 	void setupMesh();
 	const std::vector<Vertex>& GetVerticesData() const;
 	const std::vector<unsigned int>& GetIndicesData() const;
