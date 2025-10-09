@@ -7,6 +7,10 @@
 #include <iostream>
 #include <vector>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "Camera.h"
 #include "Mesh.h"
 #include "math/Vector2f.h"
@@ -118,8 +122,10 @@ int main()
 
 	WorldTrans worldTrans;
 
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile("models/cube.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+
 	Mesh mesh{vertices, elements};
-	mesh.setupMesh();
 
 	
 

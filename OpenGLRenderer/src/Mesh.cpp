@@ -3,7 +3,7 @@
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) :
 m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), m_VAO(0), m_VBO(0), m_EBO(0)
 {
-	
+	setupMesh();
 }
 
 Mesh::~Mesh()
