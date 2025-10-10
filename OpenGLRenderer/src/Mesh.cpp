@@ -1,5 +1,7 @@
 #include "Mesh.h"
 
+#include <iostream>
+
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) :
 m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), m_VAO(0), m_VBO(0), m_EBO(0)
 {
@@ -52,7 +54,18 @@ void Mesh::Bind() const
 	glBindVertexArray(m_VAO);
 }
 
-void Mesh::UnbindVAO() const
+void Mesh::Unbind() const
 {
 	glBindVertexArray(0);
+}
+
+void Mesh::Draw(ShaderProgram& shaderProgram, Texture2d& texture) const
+{
+	shaderProgram.Bind();
+	texture.Bind();
+	this->Bind();
+	glDrawElements(GL_TRIANGLES,  static_cast<GLsizei>(m_Indices.size()), GL_UNSIGNED_INT, 0);
+	this->Unbind();
+	texture.Unbind();
+	shaderProgram.Unbind();
 }

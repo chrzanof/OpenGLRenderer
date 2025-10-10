@@ -13,6 +13,7 @@
 
 #include "Camera.h"
 #include "Mesh.h"
+#include "Model.h"
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
 #include "math/Vector3f.h"
@@ -48,65 +49,17 @@ int main()
 	// ustawiamy callback zmiany rozmiaru okna
 	window.SetFrameBufferSizeCallback(framebuffer_size_callback);
 
-	// 24 vertices: 6 faces × 4 verts each
-	std::vector<Vertex> vertices = {
-		// Front face (z = +0.5, normal = +Z)
-		{-0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f}, // bottom-left
-		{ 0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 0.0f}, // bottom-right
-		{ 0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f}, // top-right
-		{-0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f}, // top-left
-
-		// Back face (z = -0.5, normal = -Z)
-		{ 0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  0.0f, 0.0f}, // bottom-left
-		{-0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  1.0f, 0.0f}, // bottom-right
-		{-0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  1.0f, 1.0f}, // top-right
-		{ 0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f,  0.0f, 1.0f}, // top-left
-
-		// Left face (x = -0.5, normal = -X)
-		{-0.5f, -0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
-		{-0.5f, -0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
-		{-0.5f,  0.5f,  0.5f,  -1.0f, 0.0f, 0.0f,   1.0f, 1.0f}, // top-right
-		{-0.5f,  0.5f, -0.5f,  -1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // top-left
-
-		// Right face (x = +0.5, normal = +X)
-		{ 0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
-		{ 0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
-		{ 0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f}, // top-right
-		{ 0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // top-left
-
-		// Top face (y = +0.5, normal = +Y)
-		{-0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f}, // bottom-left
-		{ 0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f}, // bottom-right
-		{ 0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f}, // top-right
-		{-0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f}, // top-left
-
-		// Bottom face (y = -0.5, normal = -Y)
-		{-0.5f, -0.5f, -0.5f,   0.0f, -1.0f, 0.0f,  0.0f, 0.0f}, // bottom-left
-		{ 0.5f, -0.5f, -0.5f,   0.0f, -1.0f, 0.0f,  1.0f, 0.0f}, // bottom-right
-		{ 0.5f, -0.5f,  0.5f,   0.0f, -1.0f, 0.0f,  1.0f, 1.0f}, // top-right
-		{-0.5f, -0.5f,  0.5f,   0.0f, -1.0f, 0.0f,  0.0f, 1.0f}  // top-left
-	};
-
-	// 36 indices (2 triangles per face × 6 faces)
-	std::vector<unsigned int> elements = {
-		0,  1,  2,   2,  3,  0,       // Front
-		4,  5,  6,   6,  7,  4,       // Back
-		8,  9, 10,  10, 11,  8,       // Left
-		12, 13, 14, 14, 15, 12,       // Right
-		16, 17, 18, 18, 19, 16,       // Top
-		20, 21, 22, 22, 23, 20        // Bottom
-	};
-
 
 	ShaderProgram program = ShaderProgram(
 		"shaders/vert.glsl",
 		"shaders/frag.glsl"
 	);
 
-	Texture2d texture = Texture2d("textures/container2.png");
+	Texture2d texture = Texture2d("models/backpack/diffuse.jpg");
 
 	GLuint transformLocation = glGetUniformLocation(program.GetId(), "transform");
 
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
@@ -115,19 +68,15 @@ int main()
 
 	Camera camera;
 	camera.SetFov(ToRadians(90.0f));
-	camera.SetNear(1.0f);
-	camera.SetFar(10.0f);
+	camera.SetNear(0.1f);
+	camera.SetFar(1.0f);
 	camera.SetWidth(window.GetWidth());
 	camera.SetHeight(window.GetHeight());
 
 	WorldTrans worldTrans;
 
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("models/cube.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+	Model model{"models/backpack/backpack.obj"};
 
-	Mesh mesh{vertices, elements};
-
-	
 
 	// pêtla renderingu
 	while (!window.ShouldClose())
@@ -135,7 +84,7 @@ int main()
 		window.ProcessInput();
 
 		camera.SetTarget(0.0f, 0.0f, 0.0f);
-		camera.SetPosition(4 * sin(angle), 0.0f, 2 * cos(angle));
+		camera.SetPosition(8 * sin(angle/2), 0.0f, 8 * cos(angle/2));
 
 		worldTrans.SetPosition(0.0f, 0.0f, 0.0f);
 		worldTrans.SetRotation(angle, angle, 0.0f);
@@ -143,17 +92,15 @@ int main()
 
 		auto finalTransform = camera.GetProjectionMatrix() * camera.GetViewMatrix() * worldTrans.GetMatrix();
 
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH);
 
 		program.Bind();
+		glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
 
-		texture.Bind();
-
-		mesh.Bind();
-
-		glDrawElements(GL_TRIANGLES, mesh.GetIndicesData().size(), GL_UNSIGNED_INT, 0);
+		
+		model.Draw(program, texture);
+		
 
 		window.SwapBuffers();
 
