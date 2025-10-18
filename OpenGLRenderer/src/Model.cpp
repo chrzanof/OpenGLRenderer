@@ -16,7 +16,7 @@ void Model::Draw(ShaderProgram& shaderProgram, Texture2d& texture) const
 void Model::loadModel(const std::string& path)
 {
     Assimp::Importer import;
-    const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate);
+    const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -53,7 +53,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         if (mesh->mTextureCoords[0])
         {
            
-        	textCoords.x= mesh->mTextureCoords[0][i].x;
+        	textCoords.x = mesh->mTextureCoords[0][i].x;
             textCoords.y = mesh->mTextureCoords[0][i].y;
             
         }

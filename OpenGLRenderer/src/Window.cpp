@@ -1,6 +1,4 @@
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "Window.h"
 
 Window::Window(WindowSpecs windowSpecs)
@@ -61,6 +59,12 @@ void Window::SwapBuffers() const
 void Window::SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const
 {
 	glfwSetFramebufferSizeCallback(m_Window, callback);
+}
+
+bool Window::IsKeyPressed(int key) const
+{
+	int state = glfwGetKey(m_Window, key);
+	return state == GLFW_PRESS;
 }
 
 void Window::SetViewport(int x, int y, int width, int height)

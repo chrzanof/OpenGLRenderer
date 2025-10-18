@@ -8,6 +8,7 @@ public:
 	Camera() = default;
 
 	void SetPosition(float x, float y, float z);
+	void SetPositionFromSphericalCoords(float theta, float fi, float r, Vector3f center);
 	void SetTarget(float x, float y, float z);
 	void SetFov(float fov);
 	void SetNear(float near);

@@ -1,7 +1,6 @@
 #pragma once
-#include <functional>
-#include <memory>
 #include <string>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 struct WindowSpecs
@@ -27,6 +26,7 @@ public:
 	const std::string& GetTile() const;
 	void SwapBuffers() const;
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
+	bool IsKeyPressed(int key) const;
 
 private:
 	GLFWwindow* m_Window;

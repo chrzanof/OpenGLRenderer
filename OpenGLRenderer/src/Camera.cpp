@@ -5,6 +5,14 @@ void Camera::SetPosition(float x, float y, float z)
 	this->m_position = Vector3f{ x, y, z };
 }
 
+void Camera::SetPositionFromSphericalCoords(float theta, float fi, float r, Vector3f center)
+{
+	float x = r * sin(theta) * cos(fi) + center.x;
+	float y = r * cos(theta) + center.y;
+	float z = r * sin(theta) * sin(fi) + center.z;
+	SetPosition(x, y, z);
+}
+
 void Camera::SetTarget(float x, float y, float z)
 {
 	this->m_target = Vector3f{ x, y, z };

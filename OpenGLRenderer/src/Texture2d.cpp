@@ -1,8 +1,9 @@
 #include "Texture2d.h"
 
 #include <iostream>
-
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <glad/glad.h>
 
 Texture2d::Texture2d(const std::string& fileName)
 {
@@ -46,7 +47,7 @@ void Texture2d::Unbind() const
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-GLuint Texture2d::GetId() const
+unsigned int Texture2d::GetId() const
 {
 	return m_id;
 }
