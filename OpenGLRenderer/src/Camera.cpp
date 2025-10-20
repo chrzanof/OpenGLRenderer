@@ -5,17 +5,25 @@ void Camera::SetPosition(float x, float y, float z)
 	this->m_position = Vector3f{ x, y, z };
 }
 
-void Camera::SetPositionFromSphericalCoords(float theta, float fi, float r, Vector3f center)
+void Camera::UpdateOrbitalPositionAndRotation(float theta, float fi, float r, Vector3f center)
 {
-	float x = r * sin(theta) * cos(fi) + center.x;
-	float y = r * cos(theta) + center.y;
-	float z = r * sin(theta) * sin(fi) + center.z;
-	SetPosition(x, y, z);
+	auto cameraPitch = Matrix4x4_f::RotationX(fi);
+	auto cameraYaw = Matrix4x4_f::RotationY(theta);
+
+	Vector4f cameraVector{ 0.0f, 0.0f, -r, 1.0f };
+	cameraVector = cameraYaw * cameraPitch * cameraVector;
+
+	cameraVector = cameraVector + Vector4f{ center, 0.0f };
+
+	SetPosition(cameraVector.x, cameraVector.y, cameraVector.z);
+	LookAt(center.x, center.y, center.z);
 }
 
-void Camera::SetTarget(float x, float y, float z)
+void Camera::LookAt(float x, float y, float z)
 {
-	this->m_target = Vector3f{ x, y, z };
+	m_direction = (Vector3f{ x, y, z } - m_position).Normalized();
+	m_right = Vector3f::Cross(Vector3f{ 0.0f, 1.0f, 0.0f }, m_direction).Normalized();
+	m_up = Vector3f::Cross(m_direction, m_right).Normalized();
 }
 
 void Camera::SetFov(float fov)
@@ -45,15 +53,11 @@ void Camera::SetHeight(float height)
 
 Matrix4x4_f Camera::GetViewMatrix()
 {
-	Vector3f direction = (m_target - m_position).Normalized();
-
-	Vector3f right = Vector3f::Cross(this->m_up, direction).Normalized();
-	m_up = Vector3f::Cross(direction, right).Normalized();
 
 	Matrix4x4_f cameraRotation = Matrix4x4_f{
-		right.x, right.y, right.z,  0,
+		m_right.x, m_right.y, m_right.z,  0,
 		m_up.x, m_up.y, m_up.z,  0,
-		direction.x, direction.y, direction.z,  0,
+		m_direction.x, m_direction.y, m_direction.z,  0,
 		0,   0,   0,    1
 	};
 

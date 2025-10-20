@@ -20,6 +20,11 @@ void WorldTrans::SetPosition(float x, float y, float z)
 	this->m_position = Vector3f(x, y, z);
 }
 
+const Vector3f& WorldTrans::GetPosition() const
+{
+	return m_position;
+}
+
 Matrix4x4_f WorldTrans::GetMatrix() const
 {
 	auto translation = Matrix4x4_f::Translation(

@@ -1,9 +1,10 @@
 #include "Application.h"
-
 #include <corecrt_math_defines.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "math/Vector4f.h"
+
 Application::Application(ApplicationSpecs appSpecs):
 m_Window(appSpecs.windowSpecs)
 {
@@ -81,13 +82,19 @@ void Application::ProcessInput()
 	{
 		r -= 0.01f;
 	}
+
+	if (theta >= 360.0f) theta -= 360.0f;
+	else if (theta < 0.0f) theta += 360.0f;
+
+	if (fi >= 89.5f) fi = 89.5f;
+	else if (fi < -89.5f) fi = -89.5f;
+
 	m_Window.ProcessInput();
 }
 
 void Application::Update()
 {
-	m_Camera.SetTarget(0.0f, 0.0f, 0.0f);
-	m_Camera.SetPositionFromSphericalCoords(ToRadians(theta), ToRadians(fi), r, { 0.0f, 0.0f, 0.0f });
+	m_Camera.UpdateOrbitalPositionAndRotation(ToRadians(theta), ToRadians(fi), r, m_WorldTrans.GetPosition());
 }
 
 void Application::Render()

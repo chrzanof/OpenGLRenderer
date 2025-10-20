@@ -1,7 +1,7 @@
 #pragma once
 #include <math.h>
 #include "Vector3f.h"
-#include "Vector3f.h"
+#include "Vector4f.h"
 
 class Matrix4x4_f
 {
@@ -135,6 +135,17 @@ public:
 			}
 		}
 		return newMatrix;
+	}
+
+	Vector4f operator*(Vector4f vec)
+	{
+		return {
+			values[0] * vec.x + values[1] * vec.y + values[2] * vec.z + values[3] * vec.w,
+			values[4] * vec.x + values[5] * vec.y + values[6] * vec.z + values[7] * vec.w,
+			values[8] * vec.x + values[9] * vec.y + values[10] * vec.z + values[11] * vec.w,
+			values[12] * vec.x + values[13] * vec.y + values[14] * vec.z + values[15] * vec.w
+		};
+		
 	}
 
 	Matrix4x4_f operator*(float f)

@@ -30,8 +30,8 @@ private:
     WorldTrans m_WorldTrans;
     std::unique_ptr<Model> m_Model;
 
-    float fi = 90.0f;
-    float theta = 90.0f;
+    float fi = 0.0f;
+    float theta = 0.0f;
     float r = 8.0f;
 
 public:
