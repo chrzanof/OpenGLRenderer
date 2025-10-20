@@ -32,7 +32,18 @@ private:
 
     float fi = 0.0f;
     float theta = 0.0f;
-    float r = 8.0f;
+    static float r;
+
+    Vector2f m_MouseClickedCursorPosition{0.0f, 0.0f};
+    Vector2f m_CurrentCursorPosition{ 0.0f, 0.0f };
+    Vector2f m_LastDeltaCursorPosition{ 0.0f, 0.0f };
+    Vector2f m_DeltaCursorPosition{ 0.0f, 0.0f };
+    bool m_MouseClicked = false;
+
+    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+    {
+        r -= yoffset * 0.5f;
+    }
 
 public:
     Application(ApplicationSpecs appSpecs);

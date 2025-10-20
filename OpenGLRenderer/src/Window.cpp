@@ -1,4 +1,4 @@
-#include <iostream>
+
 #include "Window.h"
 
 Window::Window(WindowSpecs windowSpecs)
@@ -61,10 +61,34 @@ void Window::SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const
 	glfwSetFramebufferSizeCallback(m_Window, callback);
 }
 
+void Window::SetScrollCallback(GLFWscrollfun callback) const
+{
+	glfwSetScrollCallback(m_Window, callback);
+}
+
 bool Window::IsKeyPressed(int key) const
 {
 	int state = glfwGetKey(m_Window, key);
 	return state == GLFW_PRESS;
+}
+
+bool Window::IsLeftMouseButtonClicked() const
+{
+	int state = glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT);
+	return state == GLFW_PRESS;
+}
+
+bool Window::IsRightMouseButtonClicked() const
+{
+	int state = glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_RIGHT);
+	return state == GLFW_PRESS;
+}
+
+Vector2f Window::GetCursorPosition() const
+{
+	double xpos, ypos;
+	glfwGetCursorPos(m_Window, &xpos, &ypos);
+	return Vector2f{ static_cast<float>(xpos), static_cast<float>(ypos)};
 }
 
 void Window::SetViewport(int x, int y, int width, int height)

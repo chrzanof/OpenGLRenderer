@@ -2,6 +2,9 @@
 #include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
+
+#include "math/Vector2f.h"
 
 struct WindowSpecs
 {
@@ -26,7 +29,12 @@ public:
 	const std::string& GetTile() const;
 	void SwapBuffers() const;
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
+	void SetScrollCallback(GLFWscrollfun callback) const;
 	bool IsKeyPressed(int key) const;
+
+	bool IsLeftMouseButtonClicked() const;
+	bool IsRightMouseButtonClicked() const;
+	Vector2f GetCursorPosition() const;
 
 private:
 	GLFWwindow* m_Window;
@@ -35,7 +43,6 @@ private:
 	std::string m_Title;
 	int m_VersionMajor;
 	int m_VersionMinor;
-
 };
 
 

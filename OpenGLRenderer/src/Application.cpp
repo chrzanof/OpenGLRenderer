@@ -5,6 +5,8 @@
 #include <iostream>
 #include "math/Vector4f.h"
 
+float Application::r = 8.0f;
+
 Application::Application(ApplicationSpecs appSpecs):
 m_Window(appSpecs.windowSpecs)
 {
@@ -15,6 +17,7 @@ m_Window(appSpecs.windowSpecs)
 	}
 
 	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
+	m_Window.SetScrollCallback(scroll_callback);
 
 	m_Program = std::make_unique<ShaderProgram>("shaders/vert.glsl", "shaders/frag.glsl");
 	m_texture2d = std::make_unique<Texture2d>("models/bear-head/textures/PM3D_Sphere3D_1DiffuseMap.tga.png");
@@ -57,30 +60,24 @@ void Application::Setup()
 
 void Application::ProcessInput()
 {
-	if (m_Window.IsKeyPressed(GLFW_KEY_LEFT))
-	{
-		theta += 0.5f;
-	}
-	if (m_Window.IsKeyPressed(GLFW_KEY_RIGHT))
-	{
-		theta -= 0.5f;
-	}
-	if (m_Window.IsKeyPressed(GLFW_KEY_UP))
-	{
-		fi += 0.5f;
-	}
-	if (m_Window.IsKeyPressed(GLFW_KEY_DOWN))
-	{
-		fi -= 0.5f;
-	}
 
-	if (m_Window.IsKeyPressed(GLFW_KEY_MINUS))
+	if (m_Window.IsLeftMouseButtonClicked() && !m_MouseClicked)
 	{
-		r += 0.01f;
-	}
-	if (m_Window.IsKeyPressed(GLFW_KEY_EQUAL))
+		m_LastDeltaCursorPosition = m_LastDeltaCursorPosition + m_DeltaCursorPosition;
+
+		m_MouseClickedCursorPosition = m_Window.GetCursorPosition();
+		m_CurrentCursorPosition = m_MouseClickedCursorPosition;
+		m_MouseClicked = true;
+	} else if (m_Window.IsLeftMouseButtonClicked() && m_MouseClicked)
 	{
-		r -= 0.01f;
+		m_CurrentCursorPosition = m_Window.GetCursorPosition();
+		m_DeltaCursorPosition = m_CurrentCursorPosition - m_MouseClickedCursorPosition;
+
+		theta = (m_LastDeltaCursorPosition.x + m_DeltaCursorPosition.x) * 0.25f;
+		fi = (m_LastDeltaCursorPosition.y + m_DeltaCursorPosition.y) * 0.25f;
+	} else
+	{
+		m_MouseClicked = false;
 	}
 
 	if (theta >= 360.0f) theta -= 360.0f;

@@ -6,7 +6,6 @@ class Camera
 {
 public:
 	Camera() = default;
-
 	void SetPosition(float x, float y, float z);
 	void UpdateOrbitalPositionAndRotation(float theta, float fi, float r, Vector3f center);
 	void LookAt(float x, float y, float z);
