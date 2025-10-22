@@ -32,17 +32,19 @@ private:
 
     float fi = 0.0f;
     float theta = 0.0f;
-    static float r;
+    float lastFi = 0.0f;
+    float lastTheta = 0.0f;
+    float cameraSpeed = 0.2f;
 
-    Vector2f m_MouseClickedCursorPosition{0.0f, 0.0f};
+    static float r;
+    static float cameraZoomSpeed;
+
+    Vector2f m_LastCursorPosition{0.0f, 0.0f};
     Vector2f m_CurrentCursorPosition{ 0.0f, 0.0f };
-    Vector2f m_LastDeltaCursorPosition{ 0.0f, 0.0f };
-    Vector2f m_DeltaCursorPosition{ 0.0f, 0.0f };
-    bool m_MouseClicked = false;
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
-        r -= yoffset * 0.5f;
+        r -= yoffset * cameraZoomSpeed;
     }
 
 public:

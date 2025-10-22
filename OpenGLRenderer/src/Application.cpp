@@ -6,6 +6,7 @@
 #include "math/Vector4f.h"
 
 float Application::r = 8.0f;
+float Application::cameraZoomSpeed = 0.5f;
 
 Application::Application(ApplicationSpecs appSpecs):
 m_Window(appSpecs.windowSpecs)
@@ -60,31 +61,20 @@ void Application::Setup()
 
 void Application::ProcessInput()
 {
+	lastFi = fi;
+	lastTheta = theta;
+	m_LastCursorPosition = m_CurrentCursorPosition;
+	m_CurrentCursorPosition = m_Window.GetCursorPosition();
 
-	if (m_Window.IsLeftMouseButtonClicked() && !m_MouseClicked)
+	if (m_Window.IsLeftMouseButtonClicked())
 	{
-		m_LastDeltaCursorPosition = m_LastDeltaCursorPosition + m_DeltaCursorPosition;
+		Vector2f deltaCursorPosition = m_CurrentCursorPosition - m_LastCursorPosition;
+		fi = lastFi + deltaCursorPosition.y * cameraSpeed;
+		theta = lastTheta + deltaCursorPosition.x * cameraSpeed;
 
-		m_MouseClickedCursorPosition = m_Window.GetCursorPosition();
-		m_CurrentCursorPosition = m_MouseClickedCursorPosition;
-		m_MouseClicked = true;
-	} else if (m_Window.IsLeftMouseButtonClicked() && m_MouseClicked)
-	{
-		m_CurrentCursorPosition = m_Window.GetCursorPosition();
-		m_DeltaCursorPosition = m_CurrentCursorPosition - m_MouseClickedCursorPosition;
-
-		theta = (m_LastDeltaCursorPosition.x + m_DeltaCursorPosition.x) * 0.25f;
-		fi = (m_LastDeltaCursorPosition.y + m_DeltaCursorPosition.y) * 0.25f;
-	} else
-	{
-		m_MouseClicked = false;
+		if (fi > 89.5f) fi = 89.5f;
+		else if (fi < -89.5f) fi = -89.5f;
 	}
-
-	if (theta >= 360.0f) theta -= 360.0f;
-	else if (theta < 0.0f) theta += 360.0f;
-
-	if (fi >= 89.5f) fi = 89.5f;
-	else if (fi < -89.5f) fi = -89.5f;
 
 	m_Window.ProcessInput();
 }
