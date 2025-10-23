@@ -99,15 +99,14 @@ public:
 		return RotationZ(rotation.z) * RotationY(rotation.y) * RotationX(rotation.x);
 	}
 
-	static Matrix4x4_f Perspective(float fov, float nearZ, float farZ, float windowWidth, float windowHeight)
+	static Matrix4x4_f Perspective(float fov, float nearZ, float farZ, float ratio)
 	{
 		float d = 1.0f / tan(fov / 2.0f);
-		float ar = windowWidth / windowHeight;
 		float a = -(farZ - nearZ) / (nearZ - farZ);
 		float b = 2.0f * farZ * nearZ / (nearZ - farZ);
 	
 		return Matrix4x4_f{
-			d/ar, 0.0f, 0.0f, 0.0f,
+			d/ratio, 0.0f, 0.0f, 0.0f,
 			0.0f, d,    0.0f, 0.0f,
 			0.0f, 0.0f, a,    b,
 			0.0f, 0.0f, 1.0f, 0.0f

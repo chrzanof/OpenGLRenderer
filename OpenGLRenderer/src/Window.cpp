@@ -1,4 +1,4 @@
-
+#include "Input.h"
 #include "Window.h"
 
 Window::Window(WindowSpecs windowSpecs)
@@ -39,6 +39,11 @@ void Window::ProcessInput()
 	{
 		glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
 	}
+
+	MouseInput::lastPosition = MouseInput::position;
+	MouseInput::position = GetCursorPosition();
+	MouseInput::leftButtonClicked = IsLeftMouseButtonClicked();
+	MouseInput::rightButtonClicked = IsRightMouseButtonClicked();
 }
 
 int Window::ShouldClose()

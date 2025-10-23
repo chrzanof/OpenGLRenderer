@@ -31,12 +31,13 @@ public:
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
 	void SetScrollCallback(GLFWscrollfun callback) const;
 	bool IsKeyPressed(int key) const;
+private:
 
 	bool IsLeftMouseButtonClicked() const;
 	bool IsRightMouseButtonClicked() const;
 	Vector2f GetCursorPosition() const;
 
-private:
+
 	GLFWwindow* m_Window;
 	int m_Width;
 	int m_Height;

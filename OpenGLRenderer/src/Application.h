@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 
+#include "Input.h"
+
 //#define _USE_MATH_DEFINES
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -18,6 +20,9 @@ struct ApplicationSpecs
 {
     WindowSpecs windowSpecs;
     std::string modelPath;
+    std::string texturePath;
+    std::string vertexShaderPath;
+    std::string fragmentShaderPath;
 };
 
 class Application
@@ -30,21 +35,10 @@ private:
     WorldTrans m_WorldTrans;
     std::unique_ptr<Model> m_Model;
 
-    float fi = 0.0f;
-    float theta = 0.0f;
-    float lastFi = 0.0f;
-    float lastTheta = 0.0f;
-    float cameraSpeed = 0.2f;
-
-    static float r;
-    static float cameraZoomSpeed;
-
-    Vector2f m_LastCursorPosition{0.0f, 0.0f};
-    Vector2f m_CurrentCursorPosition{ 0.0f, 0.0f };
-
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
-        r -= yoffset * cameraZoomSpeed;
+        MouseInput::offsetX = static_cast<float>(xoffset);
+        MouseInput::offsetY = static_cast<float>(yoffset);
     }
 
 public:
