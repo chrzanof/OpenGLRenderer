@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+
+#include "math/Matrix3x3_f.h"
 #include "math/Vector4f.h"
 
 
@@ -72,18 +74,29 @@ void Application::Update()
 
 void Application::Render()
 {
-	GLuint transformLocation = glGetUniformLocation(m_Program->GetId(), "transform");
+	GLuint mvpLocation = glGetUniformLocation(m_Program->GetId(), "mvp");
+	GLuint mvLocation = glGetUniformLocation(m_Program->GetId(), "mv");
+	GLuint mvNormLocation = glGetUniformLocation(m_Program->GetId(), "mvNorm");
 
-	auto finalTransform = 
-		m_Camera.GetProjectionMatrix(static_cast<float>(m_Window.GetWidth()) / static_cast<float>(m_Window.GetHeight())) *
-		m_Camera.GetViewMatrix() *
-		m_WorldTrans.GetMatrix();
+	auto mv4x4 = m_Camera.GetViewMatrix() * m_WorldTrans.GetMatrix();
+
+	auto mv3x3 = Matrix3x3_f{
+		mv4x4.values[0], mv4x4.values[1], mv4x4.values[2],
+		mv4x4.values[4], mv4x4.values[5], mv4x4.values[6],
+		mv4x4.values[8], mv4x4.values[9], mv4x4.values[10],
+	};
+
+	auto mvForNormals = mv3x3.Inversed().Transposed();
+
+	auto mvp = m_Camera.GetProjectionMatrix(static_cast<float>(m_Window.GetWidth()) / static_cast<float>(m_Window.GetHeight())) * mv4x4;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH);
 
 	m_Program->Bind();
-	glUniformMatrix4fv(transformLocation, 1, GL_TRUE, finalTransform.values);
+	glUniformMatrix4fv(mvpLocation, 1, GL_TRUE, mvp.values);
+	glUniformMatrix4fv(mvLocation, 1, GL_TRUE, mv4x4.values);
+	glUniformMatrix3fv(mvNormLocation, 1, GL_TRUE, mvForNormals.values);
 
 
 	m_Model->Draw(*m_Program, *m_texture2d);

@@ -1,5 +1,6 @@
 #version 330 core
 
+in vec4 MVPosition;
 in vec3 Normal;
 in vec2 TexCoord;
 
