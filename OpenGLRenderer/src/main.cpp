@@ -46,7 +46,7 @@ int main()
 		"shaders/frag.glsl"
 	};
 
-	Application application(appSpecsStalker);
+	Application application(appSpecsCube);
 	application.Run();
 
 	return 0;

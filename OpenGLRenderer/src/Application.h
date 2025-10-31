@@ -34,6 +34,7 @@ private:
     std::unique_ptr<Texture2d> m_texture2d;
     WorldTrans m_WorldTrans;
     std::unique_ptr<Model> m_Model;
+    Vector3f m_LightPos;
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {

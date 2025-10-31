@@ -10,7 +10,7 @@
 
 
 Application::Application(ApplicationSpecs appSpecs):
-m_Window(appSpecs.windowSpecs)
+m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -74,29 +74,23 @@ void Application::Update()
 
 void Application::Render()
 {
-	GLuint mvpLocation = glGetUniformLocation(m_Program->GetId(), "mvp");
-	GLuint mvLocation = glGetUniformLocation(m_Program->GetId(), "mv");
-	GLuint mvNormLocation = glGetUniformLocation(m_Program->GetId(), "mvNorm");
+	GLuint modelLocation = glGetUniformLocation(m_Program->GetId(), "model");
+	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
+	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");
+	GLuint lightPosLocation = glGetUniformLocation(m_Program->GetId(), "lightPos");
 
-	auto mv4x4 = m_Camera.GetViewMatrix() * m_WorldTrans.GetMatrix();
-
-	auto mv3x3 = Matrix3x3_f{
-		mv4x4.values[0], mv4x4.values[1], mv4x4.values[2],
-		mv4x4.values[4], mv4x4.values[5], mv4x4.values[6],
-		mv4x4.values[8], mv4x4.values[9], mv4x4.values[10],
-	};
-
-	auto mvForNormals = mv3x3.Inversed().Transposed();
-
-	auto mvp = m_Camera.GetProjectionMatrix(static_cast<float>(m_Window.GetWidth()) / static_cast<float>(m_Window.GetHeight())) * mv4x4;
+	auto model = m_WorldTrans.GetMatrix();
+	auto view = m_Camera.GetViewMatrix();
+	auto projection = m_Camera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH);
 
 	m_Program->Bind();
-	glUniformMatrix4fv(mvpLocation, 1, GL_TRUE, mvp.values);
-	glUniformMatrix4fv(mvLocation, 1, GL_TRUE, mv4x4.values);
-	glUniformMatrix3fv(mvNormLocation, 1, GL_TRUE, mvForNormals.values);
+	glUniformMatrix4fv(modelLocation, 1, GL_TRUE, model.values);
+	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
+	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
+	glUniform3fv(lightPosLocation, 1, &m_LightPos.x);
 
 
 	m_Model->Draw(*m_Program, *m_texture2d);
