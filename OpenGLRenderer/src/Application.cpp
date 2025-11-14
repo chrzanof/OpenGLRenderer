@@ -8,6 +8,57 @@
 #include "math/Vector4f.h"
 
 
+void Application::InitImGui(GLFWwindow* window)
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	ImGui::StyleColorsDark();
+
+	// GLSL version for OpenGL 3.3
+	const char* glsl_version = "#version 330";
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init(glsl_version);
+}
+
+void Application::ShutdownImGui()
+{
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void Application::DrawImGui()
+{
+	ImGui::Begin("Model Viewer Controls");
+
+	if (ImGui::Button("Open Folder..."))
+	{
+		ImGuiFileDialog::Instance()->OpenDialog(
+			"ChooseFolder",     
+			"Select Model Folder", 
+			".obj,.fbx,.gltf"
+		);
+
+	}
+	if (ImGuiFileDialog::Instance()->Display("ChooseFolder"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			
+		}
+
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+	ImGui::End();
+}
+
+void Application::ReloadModelAndTexture(const std::string& modelPath, const std::string& texturePath)
+{
+}
 
 Application::Application(ApplicationSpecs appSpecs):
 m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
@@ -24,6 +75,8 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
 	m_texture2d = std::make_unique<Texture2d>(appSpecs.texturePath);
 	m_Model = std::make_unique<Model>(appSpecs.modelPath);
+
+	InitImGui(m_Window.GetGLFWwindow());
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -46,8 +99,20 @@ Application::~Application()
 
 void Application::Run()
 {
+	const GLubyte* version = glGetString(GL_VERSION);
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	const GLubyte* vendor = glGetString(GL_VENDOR);
+
+	std::cout << "OpenGL Version: " << version << std::endl;
+	std::cout << "Renderer: " << renderer << std::endl;
+	std::cout << "Vendor: " << vendor << std::endl;
+
 	while(!m_Window.ShouldClose())
 	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		ProcessInput();
 		Update();
 		Render();
@@ -95,6 +160,9 @@ void Application::Render()
 
 	m_Model->Draw(*m_Program, *m_texture2d);
 
+	DrawImGui();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	m_Window.SwapBuffers();
 

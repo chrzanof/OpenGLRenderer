@@ -31,6 +31,8 @@ public:
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
 	void SetScrollCallback(GLFWscrollfun callback) const;
 	bool IsKeyPressed(int key) const;
+	GLFWwindow* GetGLFWwindow() const;
+
 private:
 
 	bool IsLeftMouseButtonClicked() const;

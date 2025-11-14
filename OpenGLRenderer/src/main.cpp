@@ -40,7 +40,7 @@ int main()
 
 	ApplicationSpecs appSpecsTeapot{
 		window_specs,
-		"models/teapot/teapot.obj",
+		 "models/teapot/teapot.obj",
 		"textures/container.jpg",
 		"shaders/vert.glsl",
 		"shaders/frag.glsl"

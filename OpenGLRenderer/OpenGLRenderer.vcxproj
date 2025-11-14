@@ -135,6 +135,13 @@
   <ItemGroup>
     <ClCompile Include="..\libs\GLAD\src\glad.c" />
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\imgui\filedialog\ImGuiFileDialog.cpp" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
@@ -148,6 +155,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="src\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="src\imgui\filedialog\dirent\dirent.h" />
+    <ClInclude Include="src\imgui\filedialog\ImGuiFileDialog.h" />
+    <ClInclude Include="src\imgui\filedialog\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="src\imgui\imconfig.h" />
+    <ClInclude Include="src\imgui\imgui.h" />
+    <ClInclude Include="src\imgui\imgui_internal.h" />
+    <ClInclude Include="src\imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\imgui\imstb_textedit.h" />
+    <ClInclude Include="src\imgui\imstb_truetype.h" />
     <ClInclude Include="src\Input.h" />
     <ClInclude Include="src\math\Matrix3x3_f.h" />
     <ClInclude Include="src\Model.h" />
@@ -168,12 +187,19 @@
   <ItemGroup>
     <None Include="shaders\frag.glsl" />
     <None Include="shaders\vert.glsl" />
+    <None Include="src\imgui\filedialog\dirent\ChangeLog" />
+    <None Include="src\imgui\filedialog\dirent\LICENSE" />
+    <None Include="src\imgui\filedialog\dirent\README.md" />
+    <None Include="src\imgui\filedialog\LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\awesomeface.png" />
     <Image Include="textures\concrete.jpg" />
     <Image Include="textures\container.jpg" />
     <Image Include="textures\container2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\imgui\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

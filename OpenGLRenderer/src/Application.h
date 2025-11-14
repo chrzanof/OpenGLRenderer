@@ -12,6 +12,11 @@
 
 #include "Input.h"
 
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
+#include "imgui/filedialog/ImGuiFileDialog.h"
+
 //#define _USE_MATH_DEFINES
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -41,6 +46,11 @@ private:
         MouseInput::offsetX = static_cast<float>(xoffset);
         MouseInput::offsetY = static_cast<float>(yoffset);
     }
+
+    void InitImGui(GLFWwindow* window);
+    void ShutdownImGui();
+    void DrawImGui();
+    void ReloadModelAndTexture(const std::string& modelPath, const std::string& texturePath);
 
 public:
     Application(ApplicationSpecs appSpecs);

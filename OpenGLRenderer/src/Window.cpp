@@ -77,6 +77,11 @@ bool Window::IsKeyPressed(int key) const
 	return state == GLFW_PRESS;
 }
 
+GLFWwindow* Window::GetGLFWwindow() const
+{
+	return m_Window;
+}
+
 bool Window::IsLeftMouseButtonClicked() const
 {
 	int state = glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT);
