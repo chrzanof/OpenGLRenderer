@@ -7,6 +7,42 @@
 #include "math/Matrix3x3_f.h"
 #include "math/Vector4f.h"
 
+Application::Application(ApplicationSpecs appSpecs):
+m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
+{
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		throw std::runtime_error("Failed to initialize GLAD");
+	}
+
+	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
+	m_Window.SetScrollCallback(scroll_callback);
+
+	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
+	m_Texture2d = nullptr;
+	m_Model = nullptr;
+
+	InitImGui(m_Window.GetGLFWwindow());
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
+
+	m_Camera.SetFov(ToRadians(90.0f));
+	m_Camera.SetNear(0.1f);
+	m_Camera.SetFar(1.0f);
+
+	m_WorldTrans.SetPosition(0.0f, 0.0f, 0.0f);
+	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
+	m_WorldTrans.SetScale(1.0f);
+}
+
+Application::~Application()
+{
+	Destroy();
+}
 
 void Application::InitImGui(GLFWwindow* window)
 {
@@ -34,20 +70,52 @@ void Application::DrawImGui()
 {
 	ImGui::Begin("Model Viewer Controls");
 
-	if (ImGui::Button("Open Folder..."))
+	ImGui::TextWrapped("Model: %s", m_ModelPathName.filename().string().c_str());
+	if (ImGui::Button("Choose model..."))
 	{
 		ImGuiFileDialog::Instance()->OpenDialog(
-			"ChooseFolder",     
-			"Select Model Folder", 
-			".obj,.fbx,.gltf"
+			"ChooseModel",
+			"Select Model Location",
+			".*"
 		);
 
 	}
-	if (ImGuiFileDialog::Instance()->Display("ChooseFolder"))
+	ImGui::TextWrapped("Texture: %s", m_TexturePathName.filename().string().c_str());
+	if (ImGui::Button("Choose texture..."))
+	{
+		ImGuiFileDialog::Instance()->OpenDialog(
+			"ChooseTexture",
+			"Select Texture Location",
+			".*"
+		);
+
+	}
+	if (ImGuiFileDialog::Instance()->Display("ChooseModel"))
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
-			
+			m_ModelPathName = ImGuiFileDialog::Instance()->GetFilePathName();
+
+			if (!std::filesystem::is_directory(m_ModelPathName))
+			{
+				m_Model = nullptr;
+				m_Model = std::make_unique<Model>(m_ModelPathName.string());
+			}
+		}
+
+		ImGuiFileDialog::Instance()->Close();
+	}
+	if (ImGuiFileDialog::Instance()->Display("ChooseTexture"))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			m_TexturePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+
+			if (!std::filesystem::is_directory(m_TexturePathName))
+			{
+				m_Texture2d = nullptr;
+				m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+			}
 		}
 
 		ImGuiFileDialog::Instance()->Close();
@@ -56,57 +124,8 @@ void Application::DrawImGui()
 	ImGui::End();
 }
 
-void Application::ReloadModelAndTexture(const std::string& modelPath, const std::string& texturePath)
-{
-}
-
-Application::Application(ApplicationSpecs appSpecs):
-m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
-{
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		throw std::runtime_error("Failed to initialize GLAD");
-	}
-
-	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
-	m_Window.SetScrollCallback(scroll_callback);
-
-	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
-	m_texture2d = std::make_unique<Texture2d>(appSpecs.texturePath);
-	m_Model = std::make_unique<Model>(appSpecs.modelPath);
-
-	InitImGui(m_Window.GetGLFWwindow());
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
-	glCullFace(GL_BACK);
-
-	m_Camera.SetFov(ToRadians(90.0f));
-	m_Camera.SetNear(0.1f);
-	m_Camera.SetFar(1.0f);
-
-	m_WorldTrans.SetPosition(0.0f, 0.0f, 0.0f);
-	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
-	m_WorldTrans.SetScale(1.0f);
-}
-
-Application::~Application()
-{
-	Destroy();
-}
-
 void Application::Run()
 {
-	const GLubyte* version = glGetString(GL_VERSION);
-	const GLubyte* renderer = glGetString(GL_RENDERER);
-	const GLubyte* vendor = glGetString(GL_VENDOR);
-
-	std::cout << "OpenGL Version: " << version << std::endl;
-	std::cout << "Renderer: " << renderer << std::endl;
-	std::cout << "Vendor: " << vendor << std::endl;
-
 	while(!m_Window.ShouldClose())
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -157,9 +176,10 @@ void Application::Render()
 	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
 	glUniform3fv(lightPosLocation, 1, &m_LightPos.x);
 
-
-	m_Model->Draw(*m_Program, *m_texture2d);
-
+	if (m_Texture2d && m_Model)
+	{
+		m_Model->Draw(*m_Program, *m_Texture2d);
+	}
 	DrawImGui();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
