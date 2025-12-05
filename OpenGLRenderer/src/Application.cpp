@@ -126,6 +126,7 @@ void Application::DrawImGui()
 
 void Application::Run()
 {
+	Setup();
 	while(!m_Window.ShouldClose())
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -140,6 +141,32 @@ void Application::Run()
 
 void Application::Setup()
 {
+	//generating frame buffer
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+	//creating texture
+	glGenTextures(1, &renderedTexture);
+	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Window.GetWidth(), m_Window.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	//generating depth buffer
+	glGenRenderbuffers(1, &depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Window.GetWidth(), m_Window.GetHeight());
+
+	//configuring frame buffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
+
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		throw std::runtime_error("failed to configure frame buffer");
+	}
 }
 
 void Application::ProcessInput()
@@ -158,6 +185,7 @@ void Application::Update()
 
 void Application::Render()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	GLuint modelLocation = glGetUniformLocation(m_Program->GetId(), "model");
 	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
 	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");

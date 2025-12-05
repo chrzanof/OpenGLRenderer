@@ -43,6 +43,10 @@ private:
     std::filesystem::path m_TexturePathName = "";
     std::filesystem::path m_ModelPathName = "";
 
+    GLuint frameBuffer = 0;
+    GLuint renderedTexture = 0;
+    GLuint depthBuffer = 0;
+
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
         MouseInput::offsetX = static_cast<float>(xoffset);
