@@ -18,6 +18,8 @@
 #include "imgui/filedialog/ImGuiFileDialog.h"
 #include <filesystem>
 
+#include "Quad.h"
+
 //#define _USE_MATH_DEFINES
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -46,6 +48,7 @@ private:
     GLuint frameBuffer = 0;
     GLuint renderedTexture = 0;
     GLuint depthBuffer = 0;
+    std::unique_ptr<Quad> m_Quad;
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
