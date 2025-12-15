@@ -4,7 +4,7 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-	WindowSpecs window_specs{ 1500, 1000, "OBJ Model Viewer" };
+	WindowSpecs window_specs{ 1500, 1000, "Model Viewer" };
 
 	ApplicationSpecs appSpecs {
 		window_specs,
