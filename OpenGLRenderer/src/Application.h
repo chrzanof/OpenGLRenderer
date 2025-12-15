@@ -45,13 +45,11 @@ private:
     std::filesystem::path m_TexturePathName = "";
     std::filesystem::path m_ModelPathName = "";
 
-    GLuint frameBuffer = 0;
-    GLuint renderedTexture = 0;
-    GLuint depthBuffer = 0;
-    std::unique_ptr<Quad> m_Quad;
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.WantCaptureMouse) return;
         MouseInput::offsetX = static_cast<float>(xoffset);
         MouseInput::offsetY = static_cast<float>(yoffset);
     }
@@ -64,7 +62,6 @@ public:
     Application(ApplicationSpecs appSpecs);
     ~Application();
     void Run();
-    void Setup();
     void ProcessInput();
     void Update();
     void Render();

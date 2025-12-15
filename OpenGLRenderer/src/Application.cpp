@@ -20,9 +20,10 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 	m_Window.SetScrollCallback(scroll_callback);
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
-	m_Texture2d = nullptr;
-	m_Model = nullptr;
-	m_Quad = std::make_unique<Quad>();
+	m_TexturePathName = "models/wooden_crate.jpg";
+	m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+	m_ModelPathName = "models/cube.obj";
+	m_Model = std::make_unique<Model>(m_ModelPathName.string());
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -92,6 +93,9 @@ void Application::DrawImGui()
 		);
 
 	}
+	ImGui::TextWrapped("");
+	ImGui::TextWrapped("Rotate: LMB + Drag");
+	ImGui::TextWrapped("Zoom: Mouse Wheel");
 	if (ImGuiFileDialog::Instance()->Display("ChooseModel"))
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
@@ -128,7 +132,6 @@ void Application::DrawImGui()
 
 void Application::Run()
 {
-	Setup();
 	while(!m_Window.ShouldClose())
 	{
 		ImGui_ImplOpenGL3_NewFrame();
@@ -138,36 +141,6 @@ void Application::Run()
 		ProcessInput();
 		Update();
 		Render();
-	}
-}
-
-void Application::Setup()
-{
-	//generating frame buffer
-	glGenFramebuffers(1, &frameBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-	//creating texture
-	glGenTextures(1, &renderedTexture);
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Window.GetWidth(), m_Window.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	//generating depth buffer
-	glGenRenderbuffers(1, &depthBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Window.GetWidth(), m_Window.GetHeight());
-
-	//configuring frame buffer
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
-	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBuffers);
-
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		throw std::runtime_error("failed to configure frame buffer");
 	}
 }
 
@@ -182,12 +155,13 @@ void Application::ProcessInput()
 
 void Application::Update()
 {
+
 	m_Camera.UpdateOrbitalPositionAndRotation(m_WorldTrans.GetPosition());
 }
 
 void Application::Render()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	GLuint modelLocation = glGetUniformLocation(m_Program->GetId(), "model");
 	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
 	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");
@@ -196,7 +170,7 @@ void Application::Render()
 	auto model = m_WorldTrans.GetMatrix();
 	auto view = m_Camera.GetViewMatrix();
 	auto projection = m_Camera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH);
 	m_Program->Bind();
@@ -210,15 +184,6 @@ void Application::Render()
 		m_Model->Draw(*m_Program, *m_Texture2d);
 	}
 
-	glGenerateMipmap(renderedTexture);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	m_Program->Bind();
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-	m_Quad->Bind();
-	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_Quad->GetIndicesData().size()), GL_UNSIGNED_INT, 0);
 
 	DrawImGui();
 	ImGui::Render();
