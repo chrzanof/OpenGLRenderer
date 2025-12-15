@@ -161,6 +161,9 @@
     <ClInclude Include="src\imgui\filedialog\dirent\dirent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.glsl" />

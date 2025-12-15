@@ -18,6 +18,8 @@
 #include "imgui/filedialog/ImGuiFileDialog.h"
 #include <filesystem>
 
+#include "Quad.h"
+
 //#define _USE_MATH_DEFINES
 #define ToRadians(x) x * M_PI / 180.0f
 
@@ -43,8 +45,11 @@ private:
     std::filesystem::path m_TexturePathName = "";
     std::filesystem::path m_ModelPathName = "";
 
+
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.WantCaptureMouse) return;
         MouseInput::offsetX = static_cast<float>(xoffset);
         MouseInput::offsetY = static_cast<float>(yoffset);
     }
@@ -57,7 +62,6 @@ public:
     Application(ApplicationSpecs appSpecs);
     ~Application();
     void Run();
-    void Setup();
     void ProcessInput();
     void Update();
     void Render();

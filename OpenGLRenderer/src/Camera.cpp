@@ -6,7 +6,7 @@
 
 #include "Input.h"
 
-float Camera::r = 8.0f;
+float Camera::r = 4.0f;
 float Camera::zoomSpeed = 0.5f;
 
 void Camera::SetPosition(float x, float y, float z)

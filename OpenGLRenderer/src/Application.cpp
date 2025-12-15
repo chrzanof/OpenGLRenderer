@@ -20,8 +20,10 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 	m_Window.SetScrollCallback(scroll_callback);
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
-	m_Texture2d = nullptr;
-	m_Model = nullptr;
+	m_TexturePathName = "models/wooden_crate.jpg";
+	m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+	m_ModelPathName = "models/cube.obj";
+	m_Model = std::make_unique<Model>(m_ModelPathName.string());
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -37,6 +39,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 	m_WorldTrans.SetPosition(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetScale(1.0f);
+
 }
 
 Application::~Application()
@@ -90,6 +93,9 @@ void Application::DrawImGui()
 		);
 
 	}
+	ImGui::TextWrapped("");
+	ImGui::TextWrapped("Rotate: LMB + Drag");
+	ImGui::TextWrapped("Zoom: Mouse Wheel");
 	if (ImGuiFileDialog::Instance()->Display("ChooseModel"))
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
@@ -138,10 +144,6 @@ void Application::Run()
 	}
 }
 
-void Application::Setup()
-{
-}
-
 void Application::ProcessInput()
 {
 	m_Window.ProcessInput();
@@ -153,11 +155,13 @@ void Application::ProcessInput()
 
 void Application::Update()
 {
+
 	m_Camera.UpdateOrbitalPositionAndRotation(m_WorldTrans.GetPosition());
 }
 
 void Application::Render()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	GLuint modelLocation = glGetUniformLocation(m_Program->GetId(), "model");
 	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
 	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");
@@ -166,10 +170,9 @@ void Application::Render()
 	auto model = m_WorldTrans.GetMatrix();
 	auto view = m_Camera.GetViewMatrix();
 	auto projection = m_Camera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
-
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH);
-
 	m_Program->Bind();
 	glUniformMatrix4fv(modelLocation, 1, GL_TRUE, model.values);
 	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
@@ -180,6 +183,8 @@ void Application::Render()
 	{
 		m_Model->Draw(*m_Program, *m_Texture2d);
 	}
+
+
 	DrawImGui();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -173,6 +173,7 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\Quad.h" />
     <ClInclude Include="src\ShaderProgram.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\math\Matrix4x4_f.h" />
