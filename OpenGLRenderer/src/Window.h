@@ -30,6 +30,7 @@ public:
 	void SwapBuffers() const;
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
 	void SetScrollCallback(GLFWscrollfun callback) const;
+	void SetDropCallback(GLFWdropfun callback) const;
 	bool IsKeyPressed(int key) const;
 	GLFWwindow* GetGLFWwindow() const;
 

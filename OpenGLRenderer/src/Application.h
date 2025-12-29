@@ -45,6 +45,20 @@ private:
     std::filesystem::path m_TexturePathName = "";
     std::filesystem::path m_ModelPathName = "";
 
+    static inline std::filesystem::path droppedModelPathName = "";
+    static inline std::filesystem::path droppedTexturePathName = "";
+
+    static inline std::vector<std::string> assimpExtensions = {
+    ".3ds", ".ase", ".ac", ".ac3d", ".blend", ".b3d", ".bvh", ".c4d", ".cob",
+    ".dae", ".dxf", ".fbx", ".glb", ".gltf", ".hkt", ".hkx", ".ifc", ".ifcxml",
+    ".irrmesh", ".lwo", ".lws", ".md2", ".md3", ".md5anim", ".md5mesh", ".ms3d",
+    ".obj", ".off", ".ply", ".stl", ".x", ".xgl", ".wrl", ".wrz", ".3mf",
+    ".assbin", ".x3d", ".mesh", ".xml"
+    };
+
+    static inline std::vector<std::string> textureExtensions = {
+    ".jpg", ".jpeg", ".png", ".bmp", ".tga", ".psd", ".gif", ".hdr", ".pic", ".pnm"
+    };
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
@@ -52,6 +66,28 @@ private:
         if (io.WantCaptureMouse) return;
         MouseInput::offsetX = static_cast<float>(xoffset);
         MouseInput::offsetY = static_cast<float>(yoffset);
+    }
+
+    static void drop_callback(GLFWwindow* window, int count, const char** paths)
+    {
+        
+        for (int i = 0; i < count; i++)
+        {
+            std::filesystem::path droppedFilePath(paths[i]);
+            std::string extension = droppedFilePath.extension().string();
+
+            if(std::find(textureExtensions.begin(), textureExtensions.end(),extension) != textureExtensions.end())
+            {
+                droppedTexturePathName = droppedFilePath;
+                continue;
+            }
+
+            if (std::find(assimpExtensions.begin(), assimpExtensions.end(), extension) != assimpExtensions.end())
+            {
+                droppedModelPathName = droppedFilePath;
+            }
+        }
+        
     }
 
     void InitImGui(GLFWwindow* window);

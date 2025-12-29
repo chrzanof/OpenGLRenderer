@@ -18,6 +18,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 
 	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
 	m_Window.SetScrollCallback(scroll_callback);
+	m_Window.SetDropCallback(drop_callback);
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
 	m_TexturePathName = "models/wooden_crate.jpg";
@@ -93,6 +94,7 @@ void Application::DrawImGui()
 		);
 
 	}
+	ImGui::TextWrapped("or drop model & texture files anywhere in the window");
 	ImGui::TextWrapped("");
 	ImGui::TextWrapped("Rotate: LMB + Drag");
 	ImGui::TextWrapped("Zoom: Mouse Wheel");
@@ -155,7 +157,18 @@ void Application::ProcessInput()
 
 void Application::Update()
 {
-
+	if(droppedModelPathName != "" && droppedModelPathName != m_ModelPathName)
+	{
+		m_ModelPathName = droppedModelPathName;
+		m_Model = nullptr;
+		m_Model = std::make_unique<Model>(m_ModelPathName.string());
+	}
+	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
+	{
+		m_TexturePathName = droppedTexturePathName;
+		m_Texture2d = nullptr;
+		m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+	}
 	m_Camera.UpdateOrbitalPositionAndRotation(m_WorldTrans.GetPosition());
 }
 

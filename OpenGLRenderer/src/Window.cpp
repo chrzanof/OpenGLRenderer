@@ -71,6 +71,11 @@ void Window::SetScrollCallback(GLFWscrollfun callback) const
 	glfwSetScrollCallback(m_Window, callback);
 }
 
+void Window::SetDropCallback(GLFWdropfun callback) const
+{
+	glfwSetDropCallback(m_Window, callback);
+}
+
 bool Window::IsKeyPressed(int key) const
 {
 	int state = glfwGetKey(m_Window, key);
