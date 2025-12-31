@@ -1,6 +1,5 @@
 # Model Viewer
 ![Model Viewer 1](screenshots/ModelViewer.png)
-![Model Viewer 1](screenshots/ModelViewer2.png)
 
 ## Controls
 
