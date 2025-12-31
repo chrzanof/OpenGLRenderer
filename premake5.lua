@@ -71,6 +71,7 @@ project "OpenGLRenderer"
     filter "configurations:Release"
         runtime "Release"
         optimize "on"
+        kind "WindowedApp"
 
         links
         {
