@@ -73,6 +73,11 @@ project "OpenGLRenderer"
         optimize "on"
         kind "WindowedApp"
 
+        linkoptions
+        {
+            "/ENTRY:mainCRTStartup"
+        }
+
         links
         {
             "assimp-vc143-mt"
