@@ -65,7 +65,10 @@ project "OpenGLRenderer"
             '{COPYFILE} "%{wks.location}libs/ASSIMP/lib/assimp-vc143-mtd.dll" "%{wks.location}x64/Debug/"',
 
             -- Copy shaders
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Debug/shaders"'
+            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Debug/shaders"',
+
+            -- Copy default model and texture
+            '{COPYDIR} "%{wks.location}OpenGLRenderer/models" "%{wks.location}x64/Debug/models"'
         }
 
     filter "configurations:Release"
@@ -89,7 +92,10 @@ project "OpenGLRenderer"
             '{COPYFILE} "%{wks.location}libs/ASSIMP/lib/assimp-vc143-mt.dll" "%{wks.location}x64/Release/"',
 
             -- Copy shaders
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Release/shaders"'
+            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Release/shaders"',
+
+            -- Copy default model and texture
+            '{COPYDIR} "%{wks.location}OpenGLRenderer/models" "%{wks.location}x64/Release/models"'
         }
 
     filter {}
