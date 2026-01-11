@@ -1,6 +1,6 @@
-workspace "OpenGLRenderer"
+workspace "SimpleModelViewer"
     architecture "x64"
-    startproject "OpenGLRenderer"
+    startproject "SimpleModelViewer"
 
     configurations
     {
@@ -8,21 +8,21 @@ workspace "OpenGLRenderer"
         "Release"
     }
 
-project "OpenGLRenderer"
-    location "OpenGLRenderer"
+project "SimpleModelViewer"
+    location "SimpleModelViewer"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
 
     targetdir ("x64/%{cfg.buildcfg}")
-    objdir ("OpenGLRenderer/x64/%{cfg.buildcfg}/obj")
+    objdir ("SimpleModelViewer/x64/%{cfg.buildcfg}/obj")
 
     files
     {
-        "OpenGLRenderer/src/**.h",
-        "OpenGLRenderer/src/**.hpp",
-        "OpenGLRenderer/src/**.cpp",
+        "SimpleModelViewer/src/**.h",
+        "SimpleModelViewer/src/**.hpp",
+        "SimpleModelViewer/src/**.cpp",
         "libs/GLAD/src/glad.c"
     }
 
@@ -32,7 +32,7 @@ project "OpenGLRenderer"
         "libs/GLM",
         "libs/GLAD/include",
         "libs/GLFW/include",
-        "OpenGLRenderer/src"
+        "SimpleModelViewer/src"
     }
 
     libdirs
@@ -65,10 +65,10 @@ project "OpenGLRenderer"
             '{COPYFILE} "%{wks.location}libs/ASSIMP/lib/assimp-vc143-mtd.dll" "%{wks.location}x64/Debug/"',
 
             -- Copy shaders
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Debug/shaders"',
+            '{COPYDIR} "%{wks.location}SimpleModelViewer/shaders" "%{wks.location}x64/Debug/shaders"',
 
             -- Copy default model and texture
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/models" "%{wks.location}x64/Debug/models"'
+            '{COPYDIR} "%{wks.location}SimpleModelViewer/models" "%{wks.location}x64/Debug/models"'
         }
 
     filter "configurations:Release"
@@ -92,10 +92,10 @@ project "OpenGLRenderer"
             '{COPYFILE} "%{wks.location}libs/ASSIMP/lib/assimp-vc143-mt.dll" "%{wks.location}x64/Release/"',
 
             -- Copy shaders
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/shaders" "%{wks.location}x64/Release/shaders"',
+            '{COPYDIR} "%{wks.location}SimpleModelViewer/shaders" "%{wks.location}x64/Release/shaders"',
 
             -- Copy default model and texture
-            '{COPYDIR} "%{wks.location}OpenGLRenderer/models" "%{wks.location}x64/Release/models"'
+            '{COPYDIR} "%{wks.location}SimpleModelViewer/models" "%{wks.location}x64/Release/models"'
         }
 
     filter {}
