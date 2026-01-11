@@ -32,11 +32,6 @@ Texture2d::Texture2d(const std::string& fileName)
 	this->Unbind();
 }
 
-Texture2d::~Texture2d()
-{
-	delete m_data;
-}
-
 void Texture2d::Bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, m_id);
@@ -65,9 +60,4 @@ int Texture2d::GetHeight() const
 int Texture2d::GetNrChannels() const
 {
 	return m_nrChannels;
-}
-
-const unsigned char* Texture2d::GetData() const
-{
-	return m_data; 
 }

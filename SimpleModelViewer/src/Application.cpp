@@ -160,13 +160,13 @@ void Application::Update()
 	if(droppedModelPathName != "" && droppedModelPathName != m_ModelPathName)
 	{
 		m_ModelPathName = droppedModelPathName;
-		m_Model = nullptr;
+		m_Model.reset();
 		m_Model = std::make_unique<Model>(m_ModelPathName.string());
 	}
 	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
 	{
 		m_TexturePathName = droppedTexturePathName;
-		m_Texture2d = nullptr;
+		m_Texture2d.reset();
 		m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
 	}
 	m_Camera.UpdateOrbitalPositionAndRotation(m_WorldTrans.GetPosition());
