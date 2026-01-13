@@ -27,6 +27,11 @@ public:
         return Vector2f{ x / length, y / length };
     }
 
+    float Length()
+    {
+        return sqrt(pow(x, 2) + pow(y, 2));
+    }
+
     Vector2f operator+(Vector2f other)
     {
         return Vector2f(x + other.x, y + other.y);

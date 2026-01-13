@@ -13,6 +13,11 @@ void Model::Draw(ShaderProgram& shaderProgram, Texture2d& texture) const
 	}
 }
 
+const std::vector<Mesh>& Model::GetMeshes() const
+{
+    return meshes;
+}
+
 void Model::loadModel(const std::string& path)
 {
     Assimp::Importer import;

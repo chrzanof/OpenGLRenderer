@@ -22,10 +22,10 @@ public:
         meshes.emplace_back(std::move(vertices), std::move(indices));
     }
     void Draw(ShaderProgram& shaderProgram, Texture2d& texture) const;
+    const std::vector<Mesh>& GetMeshes() const;
 private:
     std::vector<Mesh> meshes;
     std::string directory;
-
     void loadModel(const std::string& path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);

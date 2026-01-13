@@ -162,6 +162,7 @@ void Application::Update()
 		m_ModelPathName = droppedModelPathName;
 		m_Model.reset();
 		m_Model = std::make_unique<Model>(m_ModelPathName.string());
+		m_Camera.FocusOn(*m_Model, m_WorldTrans);
 	}
 	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
 	{

@@ -26,6 +26,10 @@ public:
 		float length = sqrt(x * x + y * y + z * z + w * w);
 		return Vector4f{ x / length, y / length, z / length, w / length };
 	}
+	float Length()
+	{
+		return sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2) + pow(w, 2));
+	}
 
 	Vector4f operator+(Vector4f other)
 	{

@@ -71,6 +71,36 @@ void Camera::SetFar(float far)
 }
 
 
+void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
+{
+	// calculate bounding box
+	auto& meshes = model.GetMeshes();
+	auto firstVertex = meshes.at(0).GetVerticesData().at(0).position;
+	float minX{firstVertex.x}, minY{firstVertex.y}, minZ{firstVertex.z},
+	maxX{firstVertex.x}, maxY{firstVertex.y}, maxZ{firstVertex.z};
+	for(auto& mesh : meshes)
+	{
+		for(auto& vertex : mesh.GetVerticesData())
+		{
+			minX = std::min(minX, vertex.position.x);
+			minY = std::min(minY, vertex.position.y);
+			minZ = std::min(minZ, vertex.position.z);
+
+			maxX = std::max(maxX, vertex.position.x);
+			maxY = std::max(maxY, vertex.position.y);
+			maxZ = std::max(maxZ, vertex.position.z);
+		}
+	}
+	Vector3f largestDiagonal{ maxX - minX, maxY - minY, maxZ - minZ };
+
+	// calculate camera distance and speed
+	float cameraDistanceModifier = 2.0f;
+	float l = largestDiagonal.Length();
+	r = (l * 0.5f) * tan(m_fov * 0.5f) * cameraDistanceModifier;
+	zoomSpeed = r * 0.125;
+	UpdateOrbitalPositionAndRotation(worldTrans.GetPosition());
+}
+
 Matrix4x4_f Camera::GetViewMatrix() const
 {
 

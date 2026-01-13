@@ -1,5 +1,7 @@
 #pragma once
+#include "Model.h"
 #include "Window.h"
+#include "WorldTrans.h"
 #include "math/Matrix4x4_f.h"
 #include "math/Vector3f.h"
 
@@ -16,6 +18,7 @@ public:
 	void SetFar(float far);
 	void SetWidth(float width);
 	void SetHeight(float height);
+	void FocusOn(const Model& model, const WorldTrans& worldTrans);
 	Matrix4x4_f GetViewMatrix() const;
 	Matrix4x4_f GetProjectionMatrix(float ratio) const;
 

@@ -31,6 +31,11 @@ public:
 		return Vector3f{ x / length, y / length, z / length };
 	}
 
+	float Length()
+	{
+		return sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+	}
+
 	Vector3f operator+(Vector3f other)
 	{
 		return Vector3f(x + other.x, y + other.y, z + other.z);
