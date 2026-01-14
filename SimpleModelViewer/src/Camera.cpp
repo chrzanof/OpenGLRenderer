@@ -14,7 +14,7 @@ void Camera::SetPosition(float x, float y, float z)
 	this->m_position = Vector3f{ x, y, z };
 }
 
-void Camera::UpdateOrbitalPositionAndRotation(Vector3f center)
+void Camera::UpdateOrbitalPositionAndRotation()
 {
 	auto cameraPitch = Matrix4x4_f::RotationX(ToRadians(fi));
 	auto cameraYaw = Matrix4x4_f::RotationY(ToRadians(theta));
@@ -22,10 +22,10 @@ void Camera::UpdateOrbitalPositionAndRotation(Vector3f center)
 	Vector4f cameraVector{ 0.0f, 0.0f, -r, 1.0f };
 	cameraVector = cameraYaw * cameraPitch * cameraVector;
 
-	cameraVector = cameraVector + Vector4f{ center, 0.0f };
+	cameraVector = cameraVector + Vector4f{ m_pivotPosition, 0.0f };
 
 	SetPosition(cameraVector.x, cameraVector.y, cameraVector.z);
-	LookAt(center.x, center.y, center.z);
+	LookAt(m_pivotPosition.x, m_pivotPosition.y, m_pivotPosition.z);
 }
 
 void Camera::ProcessInput()
@@ -33,7 +33,7 @@ void Camera::ProcessInput()
 	lastFi = fi;
 	lastTheta = theta;
 
-	if (MouseInput::leftButtonClicked)
+	if(MouseInput::leftButtonClicked)
 	{
 		Vector2f deltaCursorPosition = MouseInput::position - MouseInput::lastPosition;
 		fi = lastFi + deltaCursorPosition.y * cameraSpeed;
@@ -43,6 +43,12 @@ void Camera::ProcessInput()
 			fi = 89.5f;
 		else if (fi < -89.5f)
 			fi = -89.5f;
+	}
+	else if(MouseInput::rightButtonClicked)
+	{
+		Vector2f deltaCursorPosition = MouseInput::position - MouseInput::lastPosition;
+		m_pivotPosition = m_pivotPosition + m_right * -deltaCursorPosition.x * 0.01f;
+		m_pivotPosition = m_pivotPosition + m_up * deltaCursorPosition.y * 0.01f;
 	}
 
 	r -= MouseInput::offsetY * zoomSpeed;
@@ -98,7 +104,7 @@ void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 	float l = largestDiagonal.Length();
 	r = (l * 0.5f) * tan(m_fov * 0.5f) * cameraDistanceModifier;
 	zoomSpeed = r * 0.125;
-	UpdateOrbitalPositionAndRotation(worldTrans.GetPosition());
+	UpdateOrbitalPositionAndRotation();
 }
 
 Matrix4x4_f Camera::GetViewMatrix() const

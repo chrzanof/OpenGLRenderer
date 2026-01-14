@@ -170,7 +170,7 @@ void Application::Update()
 		m_Texture2d.reset();
 		m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
 	}
-	m_Camera.UpdateOrbitalPositionAndRotation(m_WorldTrans.GetPosition());
+	m_Camera.UpdateOrbitalPositionAndRotation();
 }
 
 void Application::Render()

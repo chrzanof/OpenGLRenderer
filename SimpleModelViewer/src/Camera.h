@@ -9,7 +9,7 @@ class Camera
 {
 public:
 	Camera() = default;
-	void UpdateOrbitalPositionAndRotation(Vector3f center);
+	void UpdateOrbitalPositionAndRotation();
 	void ProcessInput();
 	void SetPosition(float x, float y, float z);
 	void LookAt(float x, float y, float z);
@@ -28,6 +28,7 @@ private:
 	Vector3f m_direction = Vector3f{ 0.0f, 0.0f, 1.0f };
 	Vector3f m_up = Vector3f{0.0f, 1.0f, 0.0f};
 	Vector3f m_right = Vector3f{ 1.0f, 0.0f, 0.0f };
+	Vector3f m_pivotPosition = Vector3f{ 0.0f, 0.0f, 0.0f };
 	float m_fov = 0.0f;
 	float m_near = 0.0f;
 	float m_far = 0.0f;

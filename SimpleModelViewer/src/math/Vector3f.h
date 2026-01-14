@@ -44,4 +44,8 @@ public:
 	{
 		return Vector3f(x - other.x, y - other.y, z - other.z);
 	}
+	Vector3f operator*(float value)
+	{
+		return Vector3f(x * value, y * value, z * value);
+	}
 };
