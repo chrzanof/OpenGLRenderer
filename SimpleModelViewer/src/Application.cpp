@@ -33,14 +33,14 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 
-	m_Camera.SetFov(ToRadians(90.0f));
-	m_Camera.SetNear(0.1f);
-	m_Camera.SetFar(1.0f);
-
 	m_WorldTrans.SetPosition(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetScale(1.0f);
 
+	m_Camera.SetFov(ToRadians(90.0f));
+	m_Camera.SetNear(0.1f);
+	m_Camera.SetFar(1.0f);
+	m_Camera.FocusOn(*m_Model, m_WorldTrans);
 }
 
 Application::~Application()

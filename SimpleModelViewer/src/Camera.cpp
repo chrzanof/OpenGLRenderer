@@ -32,10 +32,10 @@ void Camera::ProcessInput()
 {
 	lastFi = fi;
 	lastTheta = theta;
+	Vector2f deltaCursorPosition = MouseInput::position - MouseInput::lastPosition;
 
 	if(MouseInput::leftButtonClicked)
 	{
-		Vector2f deltaCursorPosition = MouseInput::position - MouseInput::lastPosition;
 		fi = lastFi + deltaCursorPosition.y * cameraSpeed;
 		theta = lastTheta + deltaCursorPosition.x * cameraSpeed;
 
@@ -46,12 +46,13 @@ void Camera::ProcessInput()
 	}
 	else if(MouseInput::rightButtonClicked)
 	{
-		Vector2f deltaCursorPosition = MouseInput::position - MouseInput::lastPosition;
-		m_pivotPosition = m_pivotPosition + m_right * -deltaCursorPosition.x * 0.01f;
-		m_pivotPosition = m_pivotPosition + m_up * deltaCursorPosition.y * 0.01f;
+		m_pivotPosition = m_pivotPosition + m_right * -deltaCursorPosition.x * zoomSpeed *  0.01f;
+		m_pivotPosition = m_pivotPosition + m_up * deltaCursorPosition.y * zoomSpeed * 0.01f;
 	}
 
 	r -= MouseInput::offsetY * zoomSpeed;
+	if (r < m_near)
+		r = m_near;
 }
 
 void Camera::LookAt(float x, float y, float z)
@@ -104,7 +105,7 @@ void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 	float l = largestDiagonal.Length();
 	r = (l * 0.5f) * tan(m_fov * 0.5f) * cameraDistanceModifier;
 	zoomSpeed = r * 0.125;
-	UpdateOrbitalPositionAndRotation();
+	m_pivotPosition = worldTrans.GetPosition();
 }
 
 Matrix4x4_f Camera::GetViewMatrix() const
