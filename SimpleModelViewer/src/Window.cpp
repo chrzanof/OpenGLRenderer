@@ -18,6 +18,7 @@ Window::Window(WindowSpecs windowSpecs)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, windowSpecs.versionMajor);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, windowSpecs.versionMinor);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 	
 	m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), NULL, NULL);
 
