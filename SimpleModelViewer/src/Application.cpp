@@ -47,10 +47,27 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetScale(1.0f);
 
-	m_Camera.SetFov(TO_RADIANS(90.0f));
-	m_Camera.SetNearPlane(0.1f);
-	m_Camera.SetFarPlane(1.0f);
-	m_Camera.FocusOn(*m_Model, m_WorldTrans);
+	m_MainCamera.SetFov(TO_RADIANS(90.0f));
+	m_MainCamera.SetNearPlane(0.1f);
+	m_MainCamera.SetFarPlane(1.0f);
+	m_MainCamera.FocusOn(*m_Model, m_WorldTrans);
+
+	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+	m_LightViewCamera.SetFov(TO_RADIANS(90.f));
+	m_LightViewCamera.SetNearPlane(0.1f);
+	m_LightViewCamera.SetFarPlane(1.0f);
+	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
+
+	glGenFramebuffers(1, &m_DepthMapFBO);
+
+	glGenTextures(1, &m_DepthMap);
+	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 Application::~Application()
@@ -163,8 +180,7 @@ void Application::Run()
 void Application::ProcessInput()
 {
 	m_Window.ProcessInput();
-	m_Camera.ProcessInput();
-
+	m_MainCamera.ProcessInput();
 	MouseInput::s_OffsetX = 0.0f;
 	MouseInput::s_OffsetY = 0.0f;
 }
@@ -176,7 +192,7 @@ void Application::Update()
 		m_ModelPath = s_DroppedModelPath;
 		m_Model.reset();
 		m_Model = std::make_unique<Model>(m_ModelPath.string());
-		m_Camera.FocusOn(*m_Model, m_WorldTrans);
+		m_MainCamera.FocusOn(*m_Model, m_WorldTrans);
 		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
 	}
 	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
@@ -184,7 +200,10 @@ void Application::Update()
 		m_TexturePath = s_DroppedTexturePath;
 		m_Model->AddTexture(m_TexturePath.string());
 	}
-	m_Camera.UpdateOrbitalPositionAndRotation();
+	m_MainCamera.UpdateOrbitalPositionAndRotation();
+
+	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
 }
 
 void Application::Render()
@@ -192,8 +211,8 @@ void Application::Render()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	auto model = m_WorldTrans.GetMatrix();
-	auto view = m_Camera.GetViewMatrix();
-	auto projection = m_Camera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
+	auto view = m_MainCamera.GetViewMatrix();
+	auto projection = m_MainCamera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);

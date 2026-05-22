@@ -47,7 +47,8 @@ private:
 
 private:
     Window m_Window;
-    Camera m_Camera;
+    OrbitalCamera m_MainCamera;
+    Camera m_LightViewCamera;
     std::unique_ptr<ShaderProgram> m_ModelShader;
     std::unique_ptr<ShaderProgram> m_SkyboxShader;
     std::unique_ptr<Model> m_Model;
@@ -59,6 +60,10 @@ private:
 
     std::filesystem::path m_TexturePath = "";
     std::filesystem::path m_ModelPath = "";
+
+    const unsigned int SHADOW_MAP_WIDTH = 1024, SHADOW_MAP_HEIGHT = 1024;
+    unsigned int m_DepthMapFBO = 0;
+    unsigned int m_DepthMap = 0;
 
     static inline std::filesystem::path s_DroppedModelPath = "";
     static inline std::filesystem::path s_DroppedTexturePath = "";

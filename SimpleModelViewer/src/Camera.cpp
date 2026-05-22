@@ -11,7 +11,53 @@ void Camera::SetPosition(float x, float y, float z)
 	this->m_Position = Vector3f{ x, y, z };
 }
 
-void Camera::UpdateOrbitalPositionAndRotation()
+void Camera::LookAt(float x, float y, float z)
+{
+	m_Direction = (Vector3f{ x, y, z } - m_Position).Normalized();
+	m_Right = Vector3f::Cross(Vector3f{ 0.0f, 1.0f, 0.0f }, m_Direction).Normalized();
+	m_Up = Vector3f::Cross(m_Direction, m_Right).Normalized();
+}
+
+void Camera::SetFov(float fov)
+{
+	this->m_Fov = fov;
+}
+
+void Camera::SetNearPlane(float nearPlane)
+{
+	this->m_NearPlane = nearPlane;
+}
+
+void Camera::SetFarPlane(float farPlane)
+{
+	this->m_FarPlane = farPlane;
+}
+
+Matrix4x4_f Camera::GetViewMatrix() const
+{
+
+	Matrix4x4_f cameraRotation = Matrix4x4_f{
+		m_Right.x, m_Right.y, m_Right.z,  0,
+		m_Up.x, m_Up.y, m_Up.z,  0,
+		m_Direction.x, m_Direction.y, m_Direction.z,  0,
+		0,   0,   0,    1
+	};
+
+	Matrix4x4_f cameraTranslation = Matrix4x4_f{
+		1, 0, 0,  -m_Position.x,
+		0, 1, 0,  -m_Position.y,
+		0, 0, 1,  -m_Position.z,
+		0, 0, 0,  1
+	};
+	return cameraRotation * cameraTranslation;
+}
+
+Matrix4x4_f Camera::GetProjectionMatrix(float aspectRatio) const
+{
+	return Matrix4x4_f::Perspective(m_Fov, m_NearPlane, m_FarPlane, aspectRatio);
+}
+
+void OrbitalCamera::UpdateOrbitalPositionAndRotation()
 {
 	auto cameraPitch = Matrix4x4_f::RotationX(TO_RADIANS(m_Azimuth));
 	auto cameraYaw = Matrix4x4_f::RotationY(TO_RADIANS(m_Elevation));
@@ -25,7 +71,7 @@ void Camera::UpdateOrbitalPositionAndRotation()
 	LookAt(m_PivotPosition.x, m_PivotPosition.y, m_PivotPosition.z);
 }
 
-void Camera::ProcessInput()
+void OrbitalCamera::ProcessInput()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureMouse)
@@ -56,30 +102,8 @@ void Camera::ProcessInput()
 		m_Radius = m_NearPlane;
 }
 
-void Camera::LookAt(float x, float y, float z)
-{
-	m_Direction = (Vector3f{ x, y, z } - m_Position).Normalized();
-	m_Right = Vector3f::Cross(Vector3f{ 0.0f, 1.0f, 0.0f }, m_Direction).Normalized();
-	m_Up = Vector3f::Cross(m_Direction, m_Right).Normalized();
-}
 
-void Camera::SetFov(float fov)
-{
-	this->m_Fov = fov;
-}
-
-void Camera::SetNearPlane(float nearPlane)
-{
-	this->m_NearPlane = nearPlane;
-}
-
-void Camera::SetFarPlane(float farPlane)
-{
-	this->m_FarPlane = farPlane;
-}
-
-
-void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
+void OrbitalCamera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 {
 	// calculate camera distance and speed
 	float cameraDistanceModifier = 2.0f;
@@ -87,28 +111,4 @@ void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 	m_Radius = (l * 0.5f) * tan(m_Fov * 0.5f) * cameraDistanceModifier;
 	m_ZoomSpeed = m_Radius * 0.125;
 	m_PivotPosition = worldTrans.GetPosition();
-}
-
-Matrix4x4_f Camera::GetViewMatrix() const
-{
-
-	Matrix4x4_f cameraRotation = Matrix4x4_f{
-		m_Right.x, m_Right.y, m_Right.z,  0,
-		m_Up.x, m_Up.y, m_Up.z,  0,
-		m_Direction.x, m_Direction.y, m_Direction.z,  0,
-		0,   0,   0,    1
-	};
-
-	Matrix4x4_f cameraTranslation = Matrix4x4_f{
-		1, 0, 0,  -m_Position.x,
-		0, 1, 0,  -m_Position.y,
-		0, 0, 1,  -m_Position.z,
-		0, 0, 0,  1
-	};
-	return cameraRotation * cameraTranslation;
-}
-
-Matrix4x4_f Camera::GetProjectionMatrix(float aspectRatio) const
-{
-	return Matrix4x4_f::Perspective(m_Fov, m_NearPlane, m_FarPlane, aspectRatio);
 }
