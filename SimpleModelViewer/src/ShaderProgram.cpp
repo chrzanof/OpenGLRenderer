@@ -47,3 +47,15 @@ void ShaderProgram::SetVec3f(const std::string& name, const Vector3f& vec) const
 	GLuint location = glGetUniformLocation(m_Id, name.c_str());
 	glUniform3fv(location, 1, &vec.x);
 }
+
+void ShaderProgram::SetInt(const std::string& name, int value) const
+{
+	GLuint location = glGetUniformLocation(m_Id, name.c_str());
+	glUniform1i(location, value);
+}
+
+void ShaderProgram::SetFloat(const std::string& name, float value) const
+{
+	GLuint location = glGetUniformLocation(m_Id, name.c_str());
+	glUniform1f(location, value);
+}

@@ -64,7 +64,10 @@ void Mesh::Draw(ShaderProgram& shaderProgram) const
 {
 	shaderProgram.Bind();
 	if(!m_Textures.empty())
+	{
+		glActiveTexture(GL_TEXTURE1);
 		m_Textures[0]->Bind();
+	}
 	this->Bind();
 	glDrawElements(GL_TRIANGLES,  static_cast<GLsizei>(m_Indices.size()), GL_UNSIGNED_INT, 0);
 	this->Unbind();

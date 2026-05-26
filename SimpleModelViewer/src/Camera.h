@@ -36,6 +36,8 @@ public:
 	void UpdateOrbitalPositionAndRotation();
 	void ProcessInput();
 	void FocusOn(const Model& model, const WorldTrans& worldTrans);
+	void SetAzimuth(float value);
+	void SetElevation(float value);
 
 
 private:

@@ -28,11 +28,17 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_ModelPath = appSpecs.defaultModelPath;
 	m_TexturePath = appSpecs.defaultTexturePath;
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
+	m_Quad = std::make_unique<Quad>();
 	m_Model->AddTexture(m_TexturePath.string());
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
 
 	m_Skybox = std::make_unique<Skybox>(appSpecs.skyboxFaces);
+
+	m_SimpleDepthShader = std::make_unique<ShaderProgram>("shaders/simpleDepthVert.glsl", "shaders/simpleDepthFrag.glsl");
+
+	m_DepthMapPreviewShader = std::make_unique<ShaderProgram>("shaders/debugDepthVert.glsl", "shaders/debugDepthFrag.glsl");
+	m_LightSourceShader = std::make_unique<ShaderProgram>("shaders/lightSourceVert.glsl", "shaders/lightSourceFrag.glsl");
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -43,14 +49,24 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 
-	m_WorldTrans.SetPosition(0.0f, 0.0f, 0.0f);
-	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
-	m_WorldTrans.SetScale(1.0f);
+	m_ModelTrans.SetPosition(0.0f, 0.0f, 0.0f);
+	m_ModelTrans.SetRotation(0.0f, 0.0f, 0.0f);
+	m_ModelTrans.SetScale(1.0f);
+
+	m_QuadTrans.SetPosition(0.0f, -0.5f, 0.0f);
+	m_QuadTrans.SetRotation(TO_RADIANS(-90.0f), 0.0f, 0.0f);
+	m_QuadTrans.SetScale(10.0f);
+
+	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+	m_LightSourceTrans.SetRotation(0.0f, 0.0f, 0.0f);
+	m_LightSourceTrans.SetScale(0.05f);
 
 	m_MainCamera.SetFov(TO_RADIANS(90.0f));
 	m_MainCamera.SetNearPlane(0.1f);
 	m_MainCamera.SetFarPlane(1.0f);
-	m_MainCamera.FocusOn(*m_Model, m_WorldTrans);
+	m_MainCamera.SetAzimuth(45.0f);
+	m_MainCamera.SetElevation(45.0f);
+	m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
 
 	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
 	m_LightViewCamera.SetFov(TO_RADIANS(90.f));
@@ -66,8 +82,10 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 		SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 }
 
 Application::~Application()
@@ -192,7 +210,7 @@ void Application::Update()
 		m_ModelPath = s_DroppedModelPath;
 		m_Model.reset();
 		m_Model = std::make_unique<Model>(m_ModelPath.string());
-		m_MainCamera.FocusOn(*m_Model, m_WorldTrans);
+		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
 		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
 	}
 	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
@@ -204,13 +222,45 @@ void Application::Update()
 
 	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
 	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
+	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
 }
 
 void Application::Render()
 {
+	m_Window.SetViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	auto model = m_ModelTrans.GetMatrix();
+	auto modelQuad = m_QuadTrans.GetMatrix();
+	auto lightView = m_LightViewCamera.GetViewMatrix();
+	auto lightProjection = m_LightViewCamera.GetProjectionMatrix(float(SHADOW_MAP_WIDTH) / float(SHADOW_MAP_HEIGHT));
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	m_SimpleDepthShader->Bind();
+	m_SimpleDepthShader->SetMat4f("model", model);
+	m_SimpleDepthShader->SetMat4f("lightView", lightView);
+	m_SimpleDepthShader->SetMat4f("lightProjection", lightProjection);
+
+	if (m_Model)
+	{
+		m_Model->Draw(*m_SimpleDepthShader);
+	}
+	m_SimpleDepthShader->Bind();
+	m_SimpleDepthShader->SetMat4f("model", modelQuad);
+	m_SimpleDepthShader->SetMat4f("lightView", lightView);
+	m_SimpleDepthShader->SetMat4f("lightProjection", lightProjection);
+
+	m_Quad->Draw(*m_SimpleDepthShader);
+	
+
+	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	auto model = m_WorldTrans.GetMatrix();
 	auto view = m_MainCamera.GetViewMatrix();
 	auto projection = m_MainCamera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -222,14 +272,42 @@ void Application::Render()
 	m_ModelShader->SetMat4f("model", model);
 	m_ModelShader->SetMat4f("view", view);
 	m_ModelShader->SetMat4f("projection", projection);
+	m_ModelShader->SetMat4f("lightView", lightView);
+	m_ModelShader->SetMat4f("lightProjection", lightProjection);
 
 	m_ModelShader->SetVec3f("lightPos", m_LightPos);
 	m_ModelShader->SetVec3f("lightColor", m_LightColor);
+	m_ModelShader->SetInt("depthMap", 0);
+	m_ModelShader->SetInt("diffuseTexture", 1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
 
 	if (m_Model)
 	{
 		m_Model->Draw(*m_ModelShader);
 	}
+
+	m_ModelShader->Bind();
+
+	m_ModelShader->SetMat4f("model", modelQuad);
+	m_ModelShader->SetMat4f("view", view);
+	m_ModelShader->SetMat4f("projection", projection);
+
+	m_ModelShader->SetVec3f("lightPos", m_LightPos);
+	m_ModelShader->SetVec3f("lightColor", m_LightColor);
+	m_ModelShader->SetInt("depthMap", 0);
+	m_ModelShader->SetInt("diffuseTexture", 1);
+	m_Quad->Draw(*m_ModelShader);
+
+	auto lightSourceModel = m_LightSourceTrans.GetMatrix();
+	m_LightSourceShader->Bind();
+	m_LightSourceShader->SetMat4f("model", lightSourceModel);
+	m_LightSourceShader->SetMat4f("view", view);
+	m_LightSourceShader->SetMat4f("projection", projection);
+	m_LightSourceShader->SetVec3f("lightColor", m_LightColor);
+	m_Model->Draw(*m_LightSourceShader);
+
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_FALSE);
 	
@@ -244,6 +322,15 @@ void Application::Render()
 	
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
+	
+	//glDisable(GL_CULL_FACE);
+	//m_DepthMapPreviewShader->Bind();
+	//m_DepthMapPreviewShader->SetFloat("near_plane", 0.1f);
+	//m_DepthMapPreviewShader->SetFloat("far_plane", 1.0f);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, m_DepthMap);
+	//renderQuad();
+	//glEnable(GL_CULL_FACE);
 
 	DrawImGui();
 	ImGui::Render();

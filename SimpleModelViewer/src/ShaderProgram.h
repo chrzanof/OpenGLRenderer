@@ -15,7 +15,8 @@ public:
 	void Unbind() const;
 	void SetMat4f(const std::string& name, const Matrix4x4_f& mat) const;
 	void SetVec3f(const std::string& name, const Vector3f& vec) const;
-
+	void SetInt(const std::string& name, int value) const;
+	void SetFloat(const std::string& name, float value) const;
 private:
 	GLuint m_Id;
 };

@@ -6,7 +6,9 @@ layout (location = 2) in vec2 aTexCoord;
 
 uniform mat4 model;
 uniform mat4 view;
+uniform mat4 lightView;
 uniform mat4 projection;
+uniform mat4 lightProjection;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
@@ -16,12 +18,15 @@ out vec3 LightPos;
 out vec3 LightColor;
 out vec2 TexCoord;
 
+out vec4 LightViewPosition;
+
 void main()
 {
 	TexCoord = aTexCoord;
 	Normal = transpose(inverse(mat3(view * model))) * aNormal;
-	MVPosition = view * model * vec4(aPos, 1.0f);
-	LightPos = vec3(view * vec4(lightPos, 1.0f));
+	MVPosition = view * model * vec4(aPos, 1.0);
+	LightPos = vec3(view * vec4(lightPos, 1.0));
 	LightColor = lightColor;
-	gl_Position = projection * view * model * vec4(aPos, 1.0f);
+	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	LightViewPosition = lightProjection * lightView * model * vec4(aPos, 1.0);
 } 

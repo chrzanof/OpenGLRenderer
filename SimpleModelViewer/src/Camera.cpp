@@ -112,3 +112,13 @@ void OrbitalCamera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 	m_ZoomSpeed = m_Radius * 0.125;
 	m_PivotPosition = worldTrans.GetPosition();
 }
+
+void OrbitalCamera::SetAzimuth(float value)
+{
+	this->m_Azimuth = value;
+}
+
+void OrbitalCamera::SetElevation(float value)
+{
+	this->m_Elevation = value;
+}
