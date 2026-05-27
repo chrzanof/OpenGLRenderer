@@ -27,6 +27,12 @@ const std::vector<Mesh>& Model::GetMeshes() const
 
 Vector3f Model::GetLargestDiagonal() const
 {
+    auto bBox = GetBoundingBox();
+    return bBox.max - bBox.min;
+}
+
+BoundingBox Model::GetBoundingBox() const
+{
     float minX{ 0 }, minY{ 0 }, minZ{ 0 },
         maxX{ 0 }, maxY{ 0 }, maxZ{ 0 };
     for (auto& mesh : m_Meshes)
@@ -42,7 +48,7 @@ Vector3f Model::GetLargestDiagonal() const
             maxZ = std::max(maxZ, vertex.position.z);
         }
     }
-    return { maxX - minX, maxY - minY, maxZ - minZ };
+    return{ .min{minX, minY, minZ}, .max{maxX, maxY, maxZ} };
 }
 
 void Model::LoadModel(const std::string& path)

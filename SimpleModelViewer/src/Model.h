@@ -11,6 +11,11 @@
 #include "ShaderProgram.h"
 #include "Texture2d.h"
 
+struct BoundingBox
+{
+    Vector3f min, max;
+};
+
 class Model
 {
 public:
@@ -19,6 +24,7 @@ public:
     void Draw(ShaderProgram& shaderProgram) const;
     const std::vector<Mesh>& GetMeshes() const;
     Vector3f GetLargestDiagonal() const;
+    BoundingBox GetBoundingBox() const;
     void AddTexture(const std::string& path);
 
 private:

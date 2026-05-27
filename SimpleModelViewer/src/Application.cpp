@@ -53,9 +53,12 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_ModelTrans.SetRotation(0.0f, 0.0f, 0.0f);
 	m_ModelTrans.SetScale(1.0f);
 
-	m_QuadTrans.SetPosition(0.0f, -0.5f, 0.0f);
+	auto boundingBox = m_Model->GetBoundingBox();
+	auto largestDiagonal = boundingBox.max - boundingBox.min;
+	float modelSize = largestDiagonal.Length();
+	m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
 	m_QuadTrans.SetRotation(TO_RADIANS(-90.0f), 0.0f, 0.0f);
-	m_QuadTrans.SetScale(10.0f);
+	m_QuadTrans.SetScale(10.0f * modelSize);
 
 	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
 	m_LightSourceTrans.SetRotation(0.0f, 0.0f, 0.0f);
@@ -152,6 +155,11 @@ void Application::DrawImGui()
 				m_Model = nullptr;
 				m_Model = std::make_unique<Model>(m_ModelPath.string());
 				m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+				auto boundingBox = m_Model->GetBoundingBox();
+				auto largestDiagonal = boundingBox.max - boundingBox.min;
+				float modelSize = largestDiagonal.Length();
+				m_QuadTrans.SetScale(10.0f * modelSize);
+				m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
 			}
 		}
 
@@ -212,6 +220,11 @@ void Application::Update()
 		m_Model = std::make_unique<Model>(m_ModelPath.string());
 		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
 		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+		auto boundingBox = m_Model->GetBoundingBox();
+		auto largestDiagonal = boundingBox.max - boundingBox.min;
+		float modelSize = largestDiagonal.Length();
+		m_QuadTrans.SetScale(10.0f * modelSize);
+		m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
 	}
 	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
 	{
