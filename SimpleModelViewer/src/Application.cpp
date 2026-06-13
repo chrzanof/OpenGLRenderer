@@ -187,6 +187,7 @@ void Application::DrawImGui()
 	ImGui::TextWrapped("Rotate: LMB + Drag");
 	ImGui::TextWrapped("Zoom: Mouse Wheel");
 
+	ImGui::Checkbox("show Model", &showModel);
 	ImGui::Checkbox("show normals", &showNormals);
 	ImGui::Checkbox("show wireframe", &showWireframe);
 
@@ -301,7 +302,7 @@ void Application::Render()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
 
-	if (m_Model)
+	if (m_Model && showModel)
 	{
 		m_Model->Draw(*m_ModelShader);
 	}
@@ -352,24 +353,30 @@ void Application::Render()
 
 	if (showNormals)
 	{
+		glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE);
 		m_ShowNormalsShader->Bind();
 		m_ShowNormalsShader->SetMat4f("model", model);
 		m_ShowNormalsShader->SetMat4f("view", view);
 		m_ShowNormalsShader->SetMat4f("projection", projection);
 
 		m_Model->Draw(*m_ShowNormalsShader);
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
 	}
 
 	if (showWireframe)
 	{
-		glDisable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE);
 		m_WireframeShader->Bind();
 		m_WireframeShader->SetMat4f("model", model);
 		m_WireframeShader->SetMat4f("view", view);
 		m_WireframeShader->SetMat4f("projection", projection);
 
 		m_Model->Draw(*m_WireframeShader);
-		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
 	}
 
 	DrawImGui();

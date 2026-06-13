@@ -56,6 +56,7 @@ private:
     std::unique_ptr<ShaderProgram> m_LightSourceShader;
     std::unique_ptr<ShaderProgram> m_ShowNormalsShader;
     std::unique_ptr<ShaderProgram> m_WireframeShader;
+    bool showModel = true;
     bool showNormals = false;
     bool showWireframe = false;
     std::unique_ptr<Model> m_Model;
