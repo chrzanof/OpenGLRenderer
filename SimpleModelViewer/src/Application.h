@@ -54,6 +54,10 @@ private:
     std::unique_ptr<ShaderProgram> m_SimpleDepthShader;
     std::unique_ptr<ShaderProgram> m_DepthMapPreviewShader;
     std::unique_ptr<ShaderProgram> m_LightSourceShader;
+    std::unique_ptr<ShaderProgram> m_ShowNormalsShader;
+    std::unique_ptr<ShaderProgram> m_WireframeShader;
+    bool showNormals = false;
+    bool showWireframe = false;
     std::unique_ptr<Model> m_Model;
     std::unique_ptr<Quad> m_Quad;
     std::unique_ptr<Skybox> m_Skybox;

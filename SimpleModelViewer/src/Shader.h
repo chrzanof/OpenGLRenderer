@@ -5,7 +5,8 @@
 enum class ShaderType
 {
 	vertexShader = GL_VERTEX_SHADER,
-	fragmentShader = GL_FRAGMENT_SHADER
+	fragmentShader = GL_FRAGMENT_SHADER,
+	geometryShader = GL_GEOMETRY_SHADER
 };
 
 class Shader

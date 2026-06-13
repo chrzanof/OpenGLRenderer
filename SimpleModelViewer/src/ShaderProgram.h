@@ -7,8 +7,12 @@ class ShaderProgram
 {
 public:
 	ShaderProgram(Shader&& vertexShader, Shader&& fragmentShader);
+	ShaderProgram(Shader&& vertexShader, Shader&& geometryShader, Shader&& fragmentShader);
 	ShaderProgram(const std::string& vertexShaderFilePath,
-	              const std::string& fragmentShaderFilePath);
+				  const std::string& fragmentShaderFilePath);
+	ShaderProgram(const std::string& vertexShaderFilePath,
+				  const std::string& geometryShaderFilePath,
+				  const std::string& fragmentShaderFilePath);
 
 	GLuint GetId() const;
 	void Bind() const;

@@ -39,6 +39,8 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 
 	m_DepthMapPreviewShader = std::make_unique<ShaderProgram>("shaders/debugDepthVert.glsl", "shaders/debugDepthFrag.glsl");
 	m_LightSourceShader = std::make_unique<ShaderProgram>("shaders/lightSourceVert.glsl", "shaders/lightSourceFrag.glsl");
+	m_ShowNormalsShader = std::make_unique<ShaderProgram>("shaders/showNormalsVert.glsl", "shaders/showNormalsGeom.glsl", "shaders/showNormalsFrag.glsl");
+	m_WireframeShader = std::make_unique<ShaderProgram>("shaders/showNormalsVert.glsl", "shaders/wireframeGeom.glsl", "shaders/showNormalsFrag.glsl");
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -184,6 +186,9 @@ void Application::DrawImGui()
 	ImGui::SliderFloat3("Light Color", &m_LightColor.x, 0.0f, 1.f);
 	ImGui::TextWrapped("Rotate: LMB + Drag");
 	ImGui::TextWrapped("Zoom: Mouse Wheel");
+
+	ImGui::Checkbox("show normals", &showNormals);
+	ImGui::Checkbox("show wireframe", &showWireframe);
 
 	ImGui::End();
 }
@@ -344,6 +349,28 @@ void Application::Render()
 	//glBindTexture(GL_TEXTURE_2D, m_DepthMap);
 	//renderQuad();
 	//glEnable(GL_CULL_FACE);
+
+	if (showNormals)
+	{
+		m_ShowNormalsShader->Bind();
+		m_ShowNormalsShader->SetMat4f("model", model);
+		m_ShowNormalsShader->SetMat4f("view", view);
+		m_ShowNormalsShader->SetMat4f("projection", projection);
+
+		m_Model->Draw(*m_ShowNormalsShader);
+	}
+
+	if (showWireframe)
+	{
+		glDisable(GL_DEPTH_TEST);
+		m_WireframeShader->Bind();
+		m_WireframeShader->SetMat4f("model", model);
+		m_WireframeShader->SetMat4f("view", view);
+		m_WireframeShader->SetMat4f("projection", projection);
+
+		m_Model->Draw(*m_WireframeShader);
+		glEnable(GL_DEPTH_TEST);
+	}
 
 	DrawImGui();
 	ImGui::Render();
