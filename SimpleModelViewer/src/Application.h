@@ -58,6 +58,7 @@ private:
     std::unique_ptr<ShaderProgram> m_WireframeShader;
     bool showModel = true;
     bool showNormals = false;
+    float normalMagnitude = 0.4f;
     bool showWireframe = false;
     std::unique_ptr<Model> m_Model;
     std::unique_ptr<Quad> m_Quad;

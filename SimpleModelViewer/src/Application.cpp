@@ -30,6 +30,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
 	m_Quad = std::make_unique<Quad>();
 	m_Model->AddTexture(m_TexturePath.string());
+	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
 
@@ -157,6 +158,7 @@ void Application::DrawImGui()
 				m_Model = nullptr;
 				m_Model = std::make_unique<Model>(m_ModelPath.string());
 				m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+				normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 				auto boundingBox = m_Model->GetBoundingBox();
 				auto largestDiagonal = boundingBox.max - boundingBox.min;
 				float modelSize = largestDiagonal.Length();
@@ -226,6 +228,7 @@ void Application::Update()
 		m_Model = std::make_unique<Model>(m_ModelPath.string());
 		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
 		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+		normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 		auto boundingBox = m_Model->GetBoundingBox();
 		auto largestDiagonal = boundingBox.max - boundingBox.min;
 		float modelSize = largestDiagonal.Length();
@@ -359,7 +362,7 @@ void Application::Render()
 		m_ShowNormalsShader->SetMat4f("model", model);
 		m_ShowNormalsShader->SetMat4f("view", view);
 		m_ShowNormalsShader->SetMat4f("projection", projection);
-
+		m_ShowNormalsShader->SetFloat("MAGNITUDE", normalMagnitude);
 		m_Model->Draw(*m_ShowNormalsShader);
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
