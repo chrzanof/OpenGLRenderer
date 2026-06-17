@@ -104,6 +104,8 @@ void Application::InitImGui(GLFWwindow* window)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	ImGui::StyleColorsDark();
 
@@ -123,6 +125,11 @@ void Application::ShutdownImGui()
 
 void Application::DrawImGui()
 {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::DockSpaceOverViewport();
 	ImGui::Begin("Model Viewer Controls");
 
 	ImGui::TextWrapped("Model: %s", m_ModelPath.filename().string().c_str());
@@ -194,6 +201,9 @@ void Application::DrawImGui()
 	ImGui::Checkbox("show wireframe", &showWireframe);
 
 	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 
@@ -201,10 +211,6 @@ void Application::Run()
 {
 	while(!m_Window.ShouldClose())
 	{
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
 		ProcessInput();
 		Update();
 		Render();
@@ -381,10 +387,8 @@ void Application::Render()
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
 	}
-
+	
 	DrawImGui();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	m_Window.SwapBuffers();
 
