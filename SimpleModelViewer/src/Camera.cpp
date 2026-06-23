@@ -73,9 +73,6 @@ void OrbitalCamera::UpdateOrbitalPositionAndRotation()
 
 void OrbitalCamera::ProcessInput()
 {
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.WantCaptureMouse)
-		return;
 
 	m_LastAzimuth = m_Azimuth;
 	m_LastElevation = m_Elevation;

@@ -92,6 +92,8 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	create_framebuffer();
 }
 
 Application::~Application()
@@ -202,58 +204,36 @@ void Application::DrawImGui()
 
 	ImGui::End();
 
+	ImGui::Begin("Model View");
+
+	// we access the ImGui window size
+	m_ModelViewWidth = ImGui::GetContentRegionAvail().x;
+	m_ModelViewHeight = ImGui::GetContentRegionAvail().y;
+
+	// we rescale the framebuffer to the actual window size here and reset the glViewport 
+	rescale_framebuffer(m_ModelViewWidth, m_ModelViewHeight);
+	glViewport(0, 0, m_ModelViewWidth, m_ModelViewHeight);
+
+	// we get the screen position of the window
+	m_ModelViewWindowPos = ImGui::GetCursorScreenPos();
+
+	// and here we can add our created texture as image to ImGui
+	// unfortunately we need to use the cast to void* or I didn't find another way tbh
+	ImGui::GetWindowDrawList()->AddImage(
+		(void*)texture_id,
+		ImVec2(m_ModelViewWindowPos.x, m_ModelViewWindowPos.y),
+		ImVec2(m_ModelViewWindowPos.x + m_ModelViewWidth, m_ModelViewWindowPos.y + m_ModelViewHeight),
+		ImVec2(0, 1),
+		ImVec2(1, 0)
+	);
+
+	ImGui::End();
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-
-void Application::Run()
-{
-	while(!m_Window.ShouldClose())
-	{
-		ProcessInput();
-		Update();
-		Render();
-	}
-}
-
-void Application::ProcessInput()
-{
-	m_Window.ProcessInput();
-	m_MainCamera.ProcessInput();
-	MouseInput::s_OffsetX = 0.0f;
-	MouseInput::s_OffsetY = 0.0f;
-}
-
-void Application::Update()
-{
-	if(s_DroppedModelPath != "" && s_DroppedModelPath != m_ModelPath)
-	{
-		m_ModelPath = s_DroppedModelPath;
-		m_Model.reset();
-		m_Model = std::make_unique<Model>(m_ModelPath.string());
-		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
-		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
-		normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
-		auto boundingBox = m_Model->GetBoundingBox();
-		auto largestDiagonal = boundingBox.max - boundingBox.min;
-		float modelSize = largestDiagonal.Length();
-		m_QuadTrans.SetScale(10.0f * modelSize);
-		m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
-	}
-	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
-	{
-		m_TexturePath = s_DroppedTexturePath;
-		m_Model->AddTexture(m_TexturePath.string());
-	}
-	m_MainCamera.UpdateOrbitalPositionAndRotation();
-
-	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
-	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
-	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
-}
-
-void Application::Render()
+void Application::DrawScene()
 {
 	m_Window.SetViewport(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFBO);
@@ -284,13 +264,13 @@ void Application::Render()
 	m_SimpleDepthShader->SetMat4f("lightProjection", lightProjection);
 
 	m_Quad->Draw(*m_SimpleDepthShader);
-	
 
-	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	m_Window.SetViewport(0, 0, m_ModelViewWidth, m_ModelViewHeight);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	bind_framebuffer();
 
 	auto view = m_MainCamera.GetViewMatrix();
-	auto projection = m_MainCamera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
+	auto projection = m_MainCamera.GetProjectionMatrix(m_ModelViewWidth / m_ModelViewHeight);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -338,7 +318,7 @@ void Application::Render()
 
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_FALSE);
-	
+
 	m_SkyboxShader->Bind();
 
 
@@ -347,10 +327,10 @@ void Application::Render()
 	m_SkyboxShader->SetMat4f("projection", projection);
 
 	m_Skybox->Draw(*m_SkyboxShader);
-	
+
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
-	
+
 	//glDisable(GL_CULL_FACE);
 	//m_DepthMapPreviewShader->Bind();
 	//m_DepthMapPreviewShader->SetFloat("near_plane", 0.1f);
@@ -387,9 +367,71 @@ void Application::Render()
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
 	}
+	unbind_framebuffer();
+}
+
+
+void Application::Run()
+{
+	while(!m_Window.ShouldClose())
+	{
+		ProcessInput();
+		Update();
+		Render();
+	}
+}
+
+void Application::ProcessInput()
+{
+	m_Window.ProcessInput();
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+	{
+		float mouseX = MouseInput::s_Position.x;
+		float mouseY = MouseInput::s_Position.y;
+		bool mouseXInsideWindow = mouseX > m_ModelViewWindowPos.x && mouseX < m_ModelViewWindowPos.x + m_ModelViewWidth;
+		bool mouseYInsideWindow = mouseY > m_ModelViewWindowPos.y && mouseY < m_ModelViewWindowPos.y + m_ModelViewHeight;
+		if (mouseXInsideWindow && mouseYInsideWindow) {
+			m_MainCamera.ProcessInput();
+		}
+	}
+	MouseInput::s_OffsetX = 0.0f;
+	MouseInput::s_OffsetY = 0.0f;
+}
+
+void Application::Update()
+{
+	if(s_DroppedModelPath != "" && s_DroppedModelPath != m_ModelPath)
+	{
+		m_ModelPath = s_DroppedModelPath;
+		m_Model.reset();
+		m_Model = std::make_unique<Model>(m_ModelPath.string());
+		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
+		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+		normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
+		auto boundingBox = m_Model->GetBoundingBox();
+		auto largestDiagonal = boundingBox.max - boundingBox.min;
+		float modelSize = largestDiagonal.Length();
+		m_QuadTrans.SetScale(10.0f * modelSize);
+		m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
+	}
+	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
+	{
+		m_TexturePath = s_DroppedTexturePath;
+		m_Model->AddTexture(m_TexturePath.string());
+	}
+	m_MainCamera.UpdateOrbitalPositionAndRotation();
+
+	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
+	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+}
+
+void Application::Render()
+{
 	
 	DrawImGui();
-
+	DrawScene();
 	m_Window.SwapBuffers();
 
 	glfwPollEvents();
