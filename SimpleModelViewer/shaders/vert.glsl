@@ -2,7 +2,8 @@
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
+layout (location = 2) in vec3 aTangent;
+layout (location = 3) in vec2 aTexCoord;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -14,6 +15,7 @@ uniform vec3 lightColor;
 
 out vec4 MVPosition;
 out vec3 Normal;
+out vec3 Tangent;
 out vec3 LightPos;
 out vec3 LightColor;
 out vec2 TexCoord;
@@ -24,6 +26,7 @@ void main()
 {
 	TexCoord = aTexCoord;
 	Normal = transpose(inverse(mat3(view * model))) * aNormal;
+	Tangent = mat3(view * model) * aTangent;
 	MVPosition = view * model * vec4(aPos, 1.0);
 	LightPos = vec3(view * vec4(lightPos, 1.0));
 	LightColor = lightColor;

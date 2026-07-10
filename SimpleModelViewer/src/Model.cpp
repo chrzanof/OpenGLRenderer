@@ -1,10 +1,7 @@
 #include "Model.h"
 
-#include <filesystem>
 #include <iostream>
 #include <assimp/postprocess.h>
-#include "ShaderProgram.h"
-#include "Texture2d.h"
 
 Model::Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
     std::vector<std::shared_ptr<Texture2d>> textures): m_Directory("none")
@@ -54,7 +51,7 @@ BoundingBox Model::GetBoundingBox() const
 void Model::LoadModel(const std::string& path)
 {
     Assimp::Importer import;
-    const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -66,12 +63,12 @@ void Model::LoadModel(const std::string& path)
     ProcessNode(scene->mRootNode, scene);
 }
 
-void Model::AddTexture(const std::string& path)
+void Model::AddTexture(const std::string& path, const std::string& typeName)
 {
     std::shared_ptr<Texture2d> texture2d;
     if(auto search = m_LoadedTextures.find(path); search == m_LoadedTextures.end())
     {
-        texture2d = std::make_shared<Texture2d>(path);
+        texture2d = std::make_shared<Texture2d>(path, typeName);
         m_LoadedTextures.insert(std::make_pair(path, texture2d));
     }
     else
@@ -103,6 +100,7 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<std::shared_ptr<Texture2d>> textures;
+    std::vector<std::shared_ptr<Texture2d>> normalMaps;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -117,6 +115,7 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         Vertex vertex {
             Vector3f{mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z},
             Vector3f{mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z},
+            Vector3f{mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z},
             textCoords
         };
     	vertices.push_back(vertex);
@@ -132,13 +131,15 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     if(mesh->mMaterialIndex >= 0)
     {
         
-        textures = LoadMaterialTextures(scene, mesh,aiTextureType_DIFFUSE, "texture_diffuse");
+        textures = LoadMaterialTextures(scene, mesh, aiTextureType_DIFFUSE, "texture_diffuse");
+        normalMaps = LoadMaterialTextures(scene, mesh, aiTextureType_NORMALS, "texture_normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     }
 
     return Mesh{ vertices, indices, textures };
 }
 
-std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, std::string typeName)
+std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, const std::string& typeName)
 {
     aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
     std::vector<std::shared_ptr<Texture2d>> textures;
@@ -163,7 +164,7 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
         {
             int index = str.C_Str()[1] - '0';
             const aiTexture* texture = scene->mTextures[index];
-            auto texture2d = std::make_shared<Texture2d>(texture);
+            auto texture2d = std::make_shared<Texture2d>(texture, typeName);
             m_LoadedTextures.insert(std::make_pair(modelDir.string(), texture2d));
             textures.push_back(texture2d);
             continue;
@@ -177,7 +178,7 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
         // if path was found then load texture
         if (modelDir != "")
         {
-            auto texture2d = std::make_shared<Texture2d>(modelDir.string());
+            auto texture2d = std::make_shared<Texture2d>(modelDir.string(), typeName);
             m_LoadedTextures.insert(std::make_pair(modelDir.string(), texture2d));
             textures.push_back(texture2d);
         }

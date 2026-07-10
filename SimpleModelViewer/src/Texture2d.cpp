@@ -5,7 +5,7 @@
 #include "stb_image.h"
 #include <glad/glad.h>
 
-Texture2d::Texture2d(const std::string& fileName)
+Texture2d::Texture2d(const std::string& fileName, const std::string& typeName)
 {
 	glGenTextures(1, &m_Id);
 	glBindTexture(GL_TEXTURE_2D, m_Id);
@@ -28,10 +28,11 @@ Texture2d::Texture2d(const std::string& fileName)
 		std::cout << "Failed to load texture from path: " << fileName <<"\n";
 	}
 	stbi_image_free(data);
+	m_TypeName = typeName;
 	this->Unbind();
 }
 
-Texture2d::Texture2d(const aiTexture* aiTexture)
+Texture2d::Texture2d(const aiTexture* aiTexture, const std::string& typeName)
 {
 	glGenTextures(1, &m_Id);
 	glBindTexture(GL_TEXTURE_2D, m_Id);
@@ -62,6 +63,7 @@ Texture2d::Texture2d(const aiTexture* aiTexture)
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
+	m_TypeName = typeName;
 	this->Unbind();
 }
 
@@ -93,4 +95,9 @@ int Texture2d::GetHeight() const
 int Texture2d::GetNrChannels() const
 {
 	return m_NrChannels;
+}
+
+const std::string& Texture2d::GetTypeName() const
+{
+	return m_TypeName;
 }

@@ -32,10 +32,12 @@ void Mesh::SetupMesh()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(Vector3f));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(Vector3f)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2 * sizeof(Vector3f)));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(Vector3f)));
 
 	glBindVertexArray(0);
 }
@@ -65,8 +67,23 @@ void Mesh::Draw(ShaderProgram& shaderProgram) const
 	shaderProgram.Bind();
 	if(!m_Textures.empty())
 	{
-		glActiveTexture(GL_TEXTURE1);
-		m_Textures[0]->Bind();
+		
+		int textureIndex = 0;
+
+		while (textureIndex < m_Textures.size() && m_Textures[textureIndex]->GetTypeName() != "texture_diffuse") textureIndex++;
+		if (textureIndex < m_Textures.size())
+		{
+			glActiveTexture(GL_TEXTURE1);
+			m_Textures[textureIndex]->Bind();
+		}
+
+		while (textureIndex < m_Textures.size() && m_Textures[textureIndex]->GetTypeName() != "texture_normal") textureIndex++;
+		if (textureIndex < m_Textures.size())
+		{
+			glActiveTexture(GL_TEXTURE2);
+			m_Textures[textureIndex]->Bind();
+		}
+
 	}
 	this->Bind();
 	glDrawElements(GL_TRIANGLES,  static_cast<GLsizei>(m_Indices.size()), GL_UNSIGNED_INT, 0);

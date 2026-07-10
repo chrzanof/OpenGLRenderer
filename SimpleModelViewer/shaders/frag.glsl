@@ -2,6 +2,7 @@
 
 in vec4 MVPosition;
 in vec3 Normal;
+in vec3 Tangent;
 in vec3 LightPos;
 in vec3 LightColor;
 in vec2 TexCoord;
@@ -9,10 +10,12 @@ in vec4 LightViewPosition;
 
 uniform sampler2D depthMap;
 uniform sampler2D diffuseTexture;
+uniform sampler2D normalMap;
 
 out vec4 FragColor;
 
 float CalculatePCFShadow();
+vec3 CalcBumpedNormal();
 
 void main()
 {
@@ -20,8 +23,13 @@ void main()
 	float ambientStrength = 0.15;
 	vec3 ambient = ambientStrength * LightColor;
 
-	//Diffuse
-	vec3 norm = normalize(Normal);
+	//diffuseTexture
+	vec3 norm;
+	if(textureSize(normalMap, 0) == vec2(1)) {
+		norm = normalize(Normal);
+	} else {
+		norm = CalcBumpedNormal();
+	}
 	vec3 lightDir = normalize(LightPos - vec3(MVPosition));
 	vec3 diffuse = max(dot(norm, lightDir), 0.0) * LightColor;
 
@@ -69,4 +77,19 @@ float CalculatePCFShadow()
 		}
 	}
 	return shadowSum / 9.0;
+}
+
+vec3 CalcBumpedNormal()
+{
+    vec3 normal = normalize(Normal);
+    vec3 tangent = normalize(Tangent);
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+    vec3 bitangent = cross(tangent, normal);
+    vec3 bumpMapNormal = texture(normalMap, TexCoord).xyz;
+    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
+    vec3 newNormal;
+    mat3 TBN = mat3(tangent, bitangent, normal);
+    newNormal = TBN * bumpMapNormal;
+    newNormal = normalize(newNormal);
+    return newNormal;
 }

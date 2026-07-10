@@ -29,7 +29,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_TexturePath = appSpecs.defaultTexturePath;
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
 	m_Quad = std::make_unique<Quad>();
-	m_Model->AddTexture(m_TexturePath.string());
+	m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
 	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
@@ -186,7 +186,7 @@ void Application::DrawImGui()
 
 			if (!std::filesystem::is_directory(m_TexturePath))
 			{
-				m_Model->AddTexture(m_TexturePath.string());
+				m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
 			}
 		}
 
@@ -287,6 +287,7 @@ void Application::DrawScene()
 	m_ModelShader->SetVec3f("lightColor", m_LightColor);
 	m_ModelShader->SetInt("depthMap", 0);
 	m_ModelShader->SetInt("diffuseTexture", 1);
+	m_ModelShader->SetInt("normalMap", 2);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
@@ -306,6 +307,7 @@ void Application::DrawScene()
 	m_ModelShader->SetVec3f("lightColor", m_LightColor);
 	m_ModelShader->SetInt("depthMap", 0);
 	m_ModelShader->SetInt("diffuseTexture", 1);
+	//m_ModelShader->SetInt("normalMap", 2);
 	m_Quad->Draw(*m_ModelShader);
 
 	auto lightSourceModel = m_LightSourceTrans.GetMatrix();
@@ -418,7 +420,7 @@ void Application::Update()
 	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
 	{
 		m_TexturePath = s_DroppedTexturePath;
-		m_Model->AddTexture(m_TexturePath.string());
+		m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
 	}
 	m_MainCamera.UpdateOrbitalPositionAndRotation();
 

@@ -25,13 +25,13 @@ public:
     const std::vector<Mesh>& GetMeshes() const;
     Vector3f GetLargestDiagonal() const;
     BoundingBox GetBoundingBox() const;
-    void AddTexture(const std::string& path);
+    void AddTexture(const std::string& path, const std::string& typeName);
 
 private:
     void LoadModel(const std::string& path);
     void ProcessNode(aiNode* node, const aiScene* scene);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<std::shared_ptr<Texture2d>> LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, std::string typeName);
+    std::vector<std::shared_ptr<Texture2d>> LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, const std::string& typeName);
     const std::filesystem::path FindCorrectPath(std::filesystem::path fileName) const;
 
 private:
