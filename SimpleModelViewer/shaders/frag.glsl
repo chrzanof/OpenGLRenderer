@@ -11,6 +11,7 @@ in vec4 LightViewPosition;
 uniform sampler2D depthMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalMap;
+uniform bool useNormalMap;
 
 out vec4 FragColor;
 
@@ -25,7 +26,7 @@ void main()
 
 	//diffuseTexture
 	vec3 norm;
-	if(textureSize(normalMap, 0) == vec2(1)) {
+	if(textureSize(normalMap, 0) == vec2(1) || !useNormalMap) {
 		norm = normalize(Normal);
 	} else {
 		norm = CalcBumpedNormal();

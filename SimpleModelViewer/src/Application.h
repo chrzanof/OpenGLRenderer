@@ -22,6 +22,7 @@ struct ApplicationSpecs
     std::string fragmentShaderPath;
     std::string defaultModelPath;
     std::string defaultTexturePath;
+    std::string defaultNormalMapPath;
     std::vector<std::string> skyboxFaces;
 };
 
@@ -61,6 +62,7 @@ private:
     bool showNormals = false;
     float normalMagnitude = 0.4f;
     bool showWireframe = false;
+    bool showNormalMap = true;
     std::unique_ptr<Model> m_Model;
     std::unique_ptr<Quad> m_Quad;
     std::unique_ptr<Skybox> m_Skybox;

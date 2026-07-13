@@ -11,7 +11,7 @@
 #include "math/Vector4f.h"
 
 Application::Application(const ApplicationSpecs& appSpecs):
-m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0f, 1.0f, 1.0f)
+m_Window(appSpecs.windowSpecs), m_LightPos(0.0f, 1.0f, -1.0f), m_LightColor(1.0f, 1.0f, 1.0f)
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -30,6 +30,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
 	m_Quad = std::make_unique<Quad>();
 	m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
+	m_Model->AddTexture(appSpecs.defaultNormalMapPath, "texture_normal");
 	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
@@ -201,6 +202,7 @@ void Application::DrawImGui()
 	ImGui::Checkbox("show Model", &showModel);
 	ImGui::Checkbox("show normals", &showNormals);
 	ImGui::Checkbox("show wireframe", &showWireframe);
+	ImGui::Checkbox("use normal map", &showNormalMap);
 
 	ImGui::End();
 
@@ -288,6 +290,7 @@ void Application::DrawScene()
 	m_ModelShader->SetInt("depthMap", 0);
 	m_ModelShader->SetInt("diffuseTexture", 1);
 	m_ModelShader->SetInt("normalMap", 2);
+	m_ModelShader->SetInt("useNormalMap", showNormalMap);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
@@ -296,9 +299,7 @@ void Application::DrawScene()
 	{
 		m_Model->Draw(*m_ModelShader);
 	}
-
 	m_ModelShader->Bind();
-
 	m_ModelShader->SetMat4f("model", modelQuad);
 	m_ModelShader->SetMat4f("view", view);
 	m_ModelShader->SetMat4f("projection", projection);
@@ -306,8 +307,10 @@ void Application::DrawScene()
 	m_ModelShader->SetVec3f("lightPos", m_LightPos);
 	m_ModelShader->SetVec3f("lightColor", m_LightColor);
 	m_ModelShader->SetInt("depthMap", 0);
-	m_ModelShader->SetInt("diffuseTexture", 1);
-	//m_ModelShader->SetInt("normalMap", 2);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	m_Quad->Draw(*m_ModelShader);
 
 	auto lightSourceModel = m_LightSourceTrans.GetMatrix();

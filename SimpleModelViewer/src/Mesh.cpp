@@ -76,7 +76,7 @@ void Mesh::Draw(ShaderProgram& shaderProgram) const
 			glActiveTexture(GL_TEXTURE1);
 			m_Textures[textureIndex]->Bind();
 		}
-
+		textureIndex = 0;
 		while (textureIndex < m_Textures.size() && m_Textures[textureIndex]->GetTypeName() != "texture_normal") textureIndex++;
 		if (textureIndex < m_Textures.size())
 		{
@@ -88,7 +88,7 @@ void Mesh::Draw(ShaderProgram& shaderProgram) const
 	this->Bind();
 	glDrawElements(GL_TRIANGLES,  static_cast<GLsizei>(m_Indices.size()), GL_UNSIGNED_INT, 0);
 	this->Unbind();
-	if (!m_Textures.empty())
-		m_Textures[0]->Unbind();
+	for (int i = 0; i < m_Textures.size(); i++)
+		m_Textures[i]->Unbind();
 	shaderProgram.Unbind();
 }
