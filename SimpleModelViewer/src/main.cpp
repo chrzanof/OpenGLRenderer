@@ -13,8 +13,9 @@ int main()
 		.vertexShaderPath{ "shaders/vert.glsl" },
 		.fragmentShaderPath{ "shaders/frag.glsl" },
 		.defaultModelPath{ "models/cube.obj" },
-		.defaultTexturePath{ "models/brickwall.jpg" },
-		.defaultNormalMapPath{"models/brickwall_normal.jpg"},
+		.defaultTexturePath{ "models/bricks2.jpg" },
+		.defaultNormalMapPath{"models/bricks2_normal.jpg"},
+		.defaultHeightMapPath{"models/bricks2_disp.jpg"},
 		.skyboxFaces{ 
 			{
 			"models/skybox/right.jpg",

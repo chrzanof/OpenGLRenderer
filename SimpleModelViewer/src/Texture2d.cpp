@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <glad/glad.h>
+#include <filesystem>
 
 Texture2d::Texture2d(const std::string& fileName, const std::string& typeName)
 {
@@ -26,6 +27,11 @@ Texture2d::Texture2d(const std::string& fileName, const std::string& typeName)
 	else
 	{
 		std::cout << "Failed to load texture from path: " << fileName <<"\n";
+	}
+	std::filesystem::path path = std::filesystem::path(fileName);
+	if (!std::filesystem::exists(path))
+	{
+		std::cout << "Path to texture doesn't exist!\n";
 	}
 	stbi_image_free(data);
 	m_TypeName = typeName;

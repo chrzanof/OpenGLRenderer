@@ -101,6 +101,7 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<unsigned int> indices;
     std::vector<std::shared_ptr<Texture2d>> textures;
     std::vector<std::shared_ptr<Texture2d>> normalMaps;
+    std::vector<std::shared_ptr<Texture2d>> heightMaps;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -133,7 +134,9 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         
         textures = LoadMaterialTextures(scene, mesh, aiTextureType_DIFFUSE, "texture_diffuse");
         normalMaps = LoadMaterialTextures(scene, mesh, aiTextureType_NORMALS, "texture_normal");
+        heightMaps = LoadMaterialTextures(scene, mesh, aiTextureType_HEIGHT, "texture_height");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
 
     return Mesh{ vertices, indices, textures };

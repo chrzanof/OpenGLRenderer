@@ -11,12 +11,17 @@ in vec4 LightViewPosition;
 uniform sampler2D depthMap;
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalMap;
+uniform sampler2D heightMap;
+uniform bool useDiffuseTexture;
 uniform bool useNormalMap;
+uniform bool useHeightMap;
 
 out vec4 FragColor;
 
 float CalculatePCFShadow();
-vec3 CalcBumpedNormal();
+mat3 GetTBNMatrix();
+vec2 CalcPOMTextCoords();
+vec3 CalcBumpedNormal(vec2 texCoord);
 
 void main()
 {
@@ -25,12 +30,21 @@ void main()
 	vec3 ambient = ambientStrength * LightColor;
 
 	//diffuseTexture
+	vec2 texCoord;
+	if(textureSize(heightMap, 0) == vec2(1) || !useHeightMap) {
+		texCoord = TexCoord;
+	} else {
+		texCoord = CalcPOMTextCoords();
+		if(texCoord.x > 1.0 || texCoord.y > 1.0 || texCoord.x < 0.0 || texCoord.y < 0.0)
+			discard;
+	}
 	vec3 norm;
 	if(textureSize(normalMap, 0) == vec2(1) || !useNormalMap) {
 		norm = normalize(Normal);
 	} else {
-		norm = CalcBumpedNormal();
+		norm = CalcBumpedNormal(texCoord);
 	}
+	
 	vec3 lightDir = normalize(LightPos - vec3(MVPosition));
 	vec3 diffuse = max(dot(norm, lightDir), 0.0) * LightColor;
 
@@ -43,13 +57,13 @@ void main()
 
 	vec4 basicColor;
 	
-	if(textureSize(diffuseTexture, 0) == vec2(1))
+	if(textureSize(diffuseTexture, 0) == vec2(1) || !useDiffuseTexture)
 	{
 		basicColor = vec4(0.5, 0.5, 0.5, 1.0);
 	}
 	else
 	{
-		basicColor = texture(diffuseTexture, TexCoord);
+		basicColor = texture(diffuseTexture, texCoord);
 	}
 
 	float shadow = CalculatePCFShadow();
@@ -80,17 +94,34 @@ float CalculatePCFShadow()
 	return shadowSum / 9.0;
 }
 
-vec3 CalcBumpedNormal()
+mat3 GetTBNMatrix()
 {
-    vec3 normal = normalize(Normal);
+	vec3 normal = normalize(Normal);
     vec3 tangent = normalize(Tangent);
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     vec3 bitangent = cross(tangent, normal);
-    vec3 bumpMapNormal = texture(normalMap, TexCoord).xyz;
+	return mat3(tangent, bitangent, normal);
+}
+
+vec3 CalcBumpedNormal(vec2 texCoord)
+{
+	mat3 TBN = GetTBNMatrix();
+    vec3 bumpMapNormal = texture(normalMap, texCoord).xyz;
     bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
     vec3 newNormal;
-    mat3 TBN = mat3(tangent, bitangent, normal);
     newNormal = TBN * bumpMapNormal;
     newNormal = normalize(newNormal);
     return newNormal;
+}
+
+vec2 CalcPOMTextCoords()
+{
+	// TODO: go from simple parallax mapping to steep parallax mapping and then to parallax occlusion mapping
+	float heightScale = 0.1;
+	mat3 TBN = GetTBNMatrix();
+	vec3 tangentViewDir = inverse(TBN) * normalize(-vec3(MVPosition));
+	tangentViewDir = normalize(tangentViewDir);
+	float height = texture(heightMap, TexCoord).r;
+	vec2 p = (tangentViewDir * height * heightScale).xy;
+	return TexCoord - p;
 }

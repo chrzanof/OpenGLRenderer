@@ -83,6 +83,13 @@ void Mesh::Draw(ShaderProgram& shaderProgram) const
 			glActiveTexture(GL_TEXTURE2);
 			m_Textures[textureIndex]->Bind();
 		}
+		textureIndex = 0;
+		while (textureIndex < m_Textures.size() && m_Textures[textureIndex]->GetTypeName() != "texture_height") textureIndex++;
+		if (textureIndex < m_Textures.size())
+		{
+			glActiveTexture(GL_TEXTURE3);
+			m_Textures[textureIndex]->Bind();
+		}
 
 	}
 	this->Bind();

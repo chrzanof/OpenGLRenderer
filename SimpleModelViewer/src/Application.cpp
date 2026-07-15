@@ -31,6 +31,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(0.0f, 1.0f, -1.0f), m_LightColor(1.0f
 	m_Quad = std::make_unique<Quad>();
 	m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
 	m_Model->AddTexture(appSpecs.defaultNormalMapPath, "texture_normal");
+	m_Model->AddTexture(appSpecs.defaultHeightMapPath, "texture_height");
 	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
@@ -202,7 +203,9 @@ void Application::DrawImGui()
 	ImGui::Checkbox("show Model", &showModel);
 	ImGui::Checkbox("show normals", &showNormals);
 	ImGui::Checkbox("show wireframe", &showWireframe);
+	ImGui::Checkbox("use diffuse texture", &showDiffuseTexture);
 	ImGui::Checkbox("use normal map", &showNormalMap);
+	ImGui::Checkbox("use height map", &showHeightMap);
 
 	ImGui::End();
 
@@ -290,7 +293,10 @@ void Application::DrawScene()
 	m_ModelShader->SetInt("depthMap", 0);
 	m_ModelShader->SetInt("diffuseTexture", 1);
 	m_ModelShader->SetInt("normalMap", 2);
+	m_ModelShader->SetInt("heightMap", 3);
+	m_ModelShader->SetInt("useDiffuseTexture", showDiffuseTexture);
 	m_ModelShader->SetInt("useNormalMap", showNormalMap);
+	m_ModelShader->SetInt("useHeightMap", showHeightMap);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_DepthMap);
