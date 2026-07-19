@@ -116,12 +116,30 @@ vec3 CalcBumpedNormal(vec2 texCoord)
 
 vec2 CalcPOMTextCoords()
 {
-	// TODO: go from simple parallax mapping to steep parallax mapping and then to parallax occlusion mapping
-	float heightScale = 0.1;
 	mat3 TBN = GetTBNMatrix();
 	vec3 tangentViewDir = inverse(TBN) * normalize(-vec3(MVPosition));
 	tangentViewDir = normalize(tangentViewDir);
-	float height = texture(heightMap, TexCoord).r;
-	vec2 p = (tangentViewDir * height * heightScale).xy;
-	return TexCoord - p;
+
+	float heightScale = 0.1;
+	const int numOfLayers = 10;
+	const float heightStep = 1.0 / numOfLayers;
+
+	float currentHeight = 0.0;
+	vec3 p = tangentViewDir * heightStep * heightScale;
+	vec2 currentTexCoords = TexCoord;
+	float currentHeightMapValue = texture(heightMap, currentTexCoords).r;
+	while(currentHeight < currentHeightMapValue)
+	{
+		currentTexCoords -= p.xy;
+		currentHeightMapValue = texture(heightMap, currentTexCoords).r;
+		currentHeight += heightStep;
+	}
+	vec2 prevTexCoords = currentTexCoords + p.xy;
+
+	float afterHeight = currentHeightMapValue - currentHeight;
+	float beforeHeight = texture(heightMap, prevTexCoords).r - (currentHeight - heightStep);
+	float weight = afterHeight / (afterHeight - beforeHeight);
+	vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+	
+	return finalTexCoords;
 }

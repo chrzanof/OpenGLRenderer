@@ -13,9 +13,9 @@ int main()
 		.vertexShaderPath{ "shaders/vert.glsl" },
 		.fragmentShaderPath{ "shaders/frag.glsl" },
 		.defaultModelPath{ "models/cube.obj" },
-		.defaultTexturePath{ "models/bricks2.jpg" },
-		.defaultNormalMapPath{"models/bricks2_normal.jpg"},
-		.defaultHeightMapPath{"models/bricks2_disp.jpg"},
+		.defaultTexturePath{ "models/TCom_Rock_CliffLayered_1.5x1.5_512_albedo.png" },
+		.defaultNormalMapPath{ "models/TCom_Rock_CliffLayered_1.5x1.5_512_normal.png" },
+		.defaultHeightMapPath{ "models/TCom_Rock_CliffLayered_1.5x1.5_512_height.png" },
 		.skyboxFaces{ 
 			{
 			"models/skybox/right.jpg",
