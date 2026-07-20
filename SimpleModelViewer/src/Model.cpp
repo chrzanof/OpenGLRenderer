@@ -48,10 +48,15 @@ BoundingBox Model::GetBoundingBox() const
     return{ .min{minX, minY, minZ}, .max{maxX, maxY, maxZ} };
 }
 
-void Model::LoadModel(const std::string& path)
+void Model::LoadModel(const std::string& path, bool flipUVs)
 {
     Assimp::Importer import;
-    const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    unsigned int flags = aiProcess_Triangulate | aiProcess_CalcTangentSpace;
+
+    if (flipUVs)
+        flags |= aiProcess_FlipUVs;
+
+    const aiScene * scene = import.ReadFile(path, flags);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {

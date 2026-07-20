@@ -35,8 +35,8 @@ void main()
 		texCoord = TexCoord;
 	} else {
 		texCoord = CalcPOMTextCoords();
-		if(texCoord.x > 1.0 || texCoord.y > 1.0 || texCoord.x < 0.0 || texCoord.y < 0.0)
-			discard;
+		//if(texCoord.x > 1.0 || texCoord.y > 1.0 || texCoord.x < 0.0 || texCoord.y < 0.0)
+			//discard;
 	}
 	vec3 norm;
 	if(textureSize(normalMap, 0) == vec2(1) || !useNormalMap) {

@@ -45,6 +45,7 @@ private:
     void DrawScene();
     void ProcessInput();
     void Update();
+    void LoadModel();
     void Render();
     void Destroy();
 
@@ -59,6 +60,8 @@ private:
     std::unique_ptr<ShaderProgram> m_LightSourceShader;
     std::unique_ptr<ShaderProgram> m_ShowNormalsShader;
     std::unique_ptr<ShaderProgram> m_WireframeShader;
+    bool flipUVs = false;
+    bool areUVsFlipped = flipUVs;
     bool showModel = true;
     bool showNormals = false;
     float normalMagnitude = 0.4f;
@@ -77,6 +80,8 @@ private:
     float m_LightPosLimit = 10.0f;
 
     std::filesystem::path m_TexturePath = "";
+    std::filesystem::path m_NormalTexturePath = "";
+    std::filesystem::path m_HeightTexturePath = "";
     std::filesystem::path m_ModelPath = "";
 
     const unsigned int SHADOW_MAP_WIDTH = 1024, SHADOW_MAP_HEIGHT = 1024;

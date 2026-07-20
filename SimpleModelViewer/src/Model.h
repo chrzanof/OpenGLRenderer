@@ -19,7 +19,7 @@ struct BoundingBox
 class Model
 {
 public:
-    Model(const std::string& path){ LoadModel(path); }
+    Model(const std::string& path, bool flipUVs) { LoadModel(path, flipUVs); }
     Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture2d>> textures);
     void Draw(ShaderProgram& shaderProgram) const;
     const std::vector<Mesh>& GetMeshes() const;
@@ -28,7 +28,7 @@ public:
     void AddTexture(const std::string& path, const std::string& typeName);
 
 private:
-    void LoadModel(const std::string& path);
+    void LoadModel(const std::string& path, bool flipUVs);
     void ProcessNode(aiNode* node, const aiScene* scene);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
     std::vector<std::shared_ptr<Texture2d>> LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, const std::string& typeName);

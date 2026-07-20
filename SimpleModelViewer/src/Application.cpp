@@ -27,11 +27,13 @@ m_Window(appSpecs.windowSpecs), m_LightPos(0.0f, 1.0f, -1.0f), m_LightColor(1.0f
 	m_ModelShader = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
 	m_ModelPath = appSpecs.defaultModelPath;
 	m_TexturePath = appSpecs.defaultTexturePath;
-	m_Model = std::make_unique<Model>(m_ModelPath.string());
+	m_NormalTexturePath = appSpecs.defaultNormalMapPath;
+	m_HeightTexturePath = appSpecs.defaultHeightMapPath;
+	m_Model = std::make_unique<Model>(m_ModelPath.string(), flipUVs);
 	m_Quad = std::make_unique<Quad>();
 	m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
-	m_Model->AddTexture(appSpecs.defaultNormalMapPath, "texture_normal");
-	m_Model->AddTexture(appSpecs.defaultHeightMapPath, "texture_height");
+	m_Model->AddTexture(m_NormalTexturePath.string(), "texture_normal");
+	m_Model->AddTexture(m_HeightTexturePath.string(), "texture_height");
 	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
 
 	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
@@ -137,69 +139,18 @@ void Application::DrawImGui()
 	ImGui::Begin("Model Viewer Controls");
 
 	ImGui::TextWrapped("Model: %s", m_ModelPath.filename().string().c_str());
-	if (ImGui::Button("Choose model..."))
-	{
-		ImGuiFileDialog::Instance()->OpenDialog(
-			"ChooseModel",
-			"Select Model Location",
-			".*"
-		);
-
-	}
 	ImGui::TextWrapped("Texture: %s", m_TexturePath.filename().string().c_str());
-	if (ImGui::Button("Choose texture..."))
-	{
-		ImGuiFileDialog::Instance()->OpenDialog(
-			"ChooseTexture",
-			"Select Texture Location",
-			".*"
-		);
-
-	}
-	ImGui::TextWrapped("or drop model & texture files anywhere in the window");
 	ImGui::TextWrapped("");
-	if (ImGuiFileDialog::Instance()->Display("ChooseModel"))
-	{
-		if (ImGuiFileDialog::Instance()->IsOk())
-		{
-			m_ModelPath = ImGuiFileDialog::Instance()->GetFilePathName();
-
-			if (!std::filesystem::is_directory(m_ModelPath))
-			{
-				m_Model = nullptr;
-				m_Model = std::make_unique<Model>(m_ModelPath.string());
-				m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
-				normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
-				auto boundingBox = m_Model->GetBoundingBox();
-				auto largestDiagonal = boundingBox.max - boundingBox.min;
-				float modelSize = largestDiagonal.Length();
-				m_QuadTrans.SetScale(10.0f * modelSize);
-				m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
-			}
-		}
-
-		ImGuiFileDialog::Instance()->Close();
-	}
-	if (ImGuiFileDialog::Instance()->Display("ChooseTexture"))
-	{
-		if (ImGuiFileDialog::Instance()->IsOk())
-		{
-			m_TexturePath = ImGuiFileDialog::Instance()->GetFilePathName();
-
-			if (!std::filesystem::is_directory(m_TexturePath))
-			{
-				m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
-			}
-		}
-
-		ImGuiFileDialog::Instance()->Close();
-	}
 
 	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -m_LightPosLimit, m_LightPosLimit);
 	ImGui::SliderFloat3("Light Color", &m_LightColor.x, 0.0f, 1.f);
+	ImGui::TextWrapped("");
+
 	ImGui::TextWrapped("Rotate: LMB + Drag");
 	ImGui::TextWrapped("Zoom: Mouse Wheel");
+	ImGui::TextWrapped("");
 
+	ImGui::Checkbox("flip UVs", &flipUVs);
 	ImGui::Checkbox("show Model", &showModel);
 	ImGui::Checkbox("show normals", &showNormals);
 	ImGui::Checkbox("show wireframe", &showWireframe);
@@ -211,19 +162,17 @@ void Application::DrawImGui()
 
 	ImGui::Begin("Model View");
 
-	// we access the ImGui window size
 	m_ModelViewWidth = ImGui::GetContentRegionAvail().x;
 	m_ModelViewHeight = ImGui::GetContentRegionAvail().y;
 
-	// we rescale the framebuffer to the actual window size here and reset the glViewport 
+
 	rescale_framebuffer(m_ModelViewWidth, m_ModelViewHeight);
 	glViewport(0, 0, m_ModelViewWidth, m_ModelViewHeight);
 
-	// we get the screen position of the window
+
 	m_ModelViewWindowPos = ImGui::GetCursorScreenPos();
 
-	// and here we can add our created texture as image to ImGui
-	// unfortunately we need to use the cast to void* or I didn't find another way tbh
+
 	ImGui::GetWindowDrawList()->AddImage(
 		(void*)texture_id,
 		ImVec2(m_ModelViewWindowPos.x, m_ModelViewWindowPos.y),
@@ -415,16 +364,20 @@ void Application::Update()
 	if(s_DroppedModelPath != "" && s_DroppedModelPath != m_ModelPath)
 	{
 		m_ModelPath = s_DroppedModelPath;
-		m_Model.reset();
-		m_Model = std::make_unique<Model>(m_ModelPath.string());
-		m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
-		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
-		normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
-		auto boundingBox = m_Model->GetBoundingBox();
-		auto largestDiagonal = boundingBox.max - boundingBox.min;
-		float modelSize = largestDiagonal.Length();
-		m_QuadTrans.SetScale(10.0f * modelSize);
-		m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
+		LoadModel();
+		m_TexturePath = "";
+		
+	}
+	else if (flipUVs != areUVsFlipped)
+	{
+		LoadModel();
+		areUVsFlipped = flipUVs;
+		if (m_TexturePath != "")
+		{
+			m_Model->AddTexture(m_TexturePath.string(), "texture_diffuse");
+			m_Model->AddTexture(m_NormalTexturePath.string(), "texture_normal");
+			m_Model->AddTexture(m_HeightTexturePath.string(), "texture_height");
+		}
 	}
 	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
 	{
@@ -436,6 +389,20 @@ void Application::Update()
 	m_LightViewCamera.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
 	m_LightViewCamera.LookAt(0.0f, 0.0f, 0.0f);
 	m_LightSourceTrans.SetPosition(m_LightPos.x, m_LightPos.y, m_LightPos.z);
+}
+
+void Application::LoadModel()
+{
+	m_Model.reset();
+	m_Model = std::make_unique<Model>(m_ModelPath.string(), flipUVs);
+	m_MainCamera.FocusOn(*m_Model, m_ModelTrans);
+	m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
+	normalMagnitude = m_Model->GetLargestDiagonal().Length() / 100.0f;
+	auto boundingBox = m_Model->GetBoundingBox();
+	auto largestDiagonal = boundingBox.max - boundingBox.min;
+	float modelSize = largestDiagonal.Length();
+	m_QuadTrans.SetScale(10.0f * modelSize);
+	m_QuadTrans.SetPosition(0.0f, boundingBox.min.y, 0.0f);
 }
 
 void Application::Render()
