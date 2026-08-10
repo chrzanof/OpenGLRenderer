@@ -165,8 +165,6 @@ void Application::DrawImGui()
 	m_ModelViewWidth = ImGui::GetContentRegionAvail().x;
 	m_ModelViewHeight = ImGui::GetContentRegionAvail().y;
 
-
-	rescale_framebuffer(m_ModelViewWidth, m_ModelViewHeight);
 	glViewport(0, 0, m_ModelViewWidth, m_ModelViewHeight);
 
 
@@ -407,9 +405,9 @@ void Application::LoadModel()
 
 void Application::Render()
 {
-	
-	DrawImGui();
+	rescale_framebuffer(m_ModelViewWidth, m_ModelViewHeight);
 	DrawScene();
+	DrawImGui();
 	m_Window.SwapBuffers();
 
 	glfwPollEvents();
